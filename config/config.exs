@@ -12,7 +12,6 @@ config :metrist_site,
   generators: [binary_id: true],
   event_stores: [MetristSite.EventStore]
 
-# Configures the endpoint
 config :metrist_site, MetristSiteWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "UFqDE7PnGq+OOMmMj94I9KiS3gN5BcKVhv+0SAZH9ayGD5RZYPoq+VEJmaquMHdk",
@@ -20,13 +19,19 @@ config :metrist_site, MetristSiteWeb.Endpoint,
   pubsub_server: MetristSite.PubSub,
   live_view: [signing_salt: "vrU39nPD"]
 
-# Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-# Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :ueberauth, Ueberauth,
+   providers: [
+     github: {Ueberauth.Strategy.Github, []}
+   ]
+config :ueberauth, Ueberauth.Strategy.Github.OAuth,
+  client_id: System.get_env("GITHUB_CLIENT_ID"),
+  client_secret: System.get_env("GITHUB_CLIENT_SECRET")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
