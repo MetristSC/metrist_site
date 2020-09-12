@@ -19,7 +19,7 @@ defmodule MetristSiteWeb.Router do
     get "/", PageController, :index
   end
 
-  scope "/auth", MyApp do
+  scope "/auth", MetristSiteWeb do
     pipe_through :browser
 
     get "/:provider", AuthController, :request

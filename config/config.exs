@@ -27,7 +27,7 @@ config :phoenix, :json_library, Jason
 
 config :ueberauth, Ueberauth,
    providers: [
-     github: {Ueberauth.Strategy.Github, []}
+     github: {Ueberauth.Strategy.Github, [send_redirect_uri: false]}
    ]
 config :ueberauth, Ueberauth.Strategy.Github.OAuth,
   client_id: System.get_env("GITHUB_CLIENT_ID"),
