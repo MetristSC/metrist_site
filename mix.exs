@@ -44,7 +44,9 @@ defmodule MetristSite.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:commanded, "~> 1.2"},
+      {:commanded_eventstore_adapter, "~> 1.2"}
     ]
   end
 
@@ -56,10 +58,13 @@ defmodule MetristSite.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
+      setup: ["deps.get", "ecto.setup", "event_store.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "event_store.setup": ["event_store.create", "event_store.init"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      "event_store.reset": ["event_store.drop", "event_store.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet",
+             "event_store.setup", "test"]
     ]
   end
 end

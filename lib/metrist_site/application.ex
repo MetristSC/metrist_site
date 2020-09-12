@@ -4,6 +4,12 @@ defmodule MetristSite.Application do
   @moduledoc false
 
   use Application
+  use Commanded.Application,
+     otp_app: :metrist_site,
+     event_store: [
+       adapter: Commanded.EventStore.Adapters.EventStore,
+       event_store: MetristSite.EventStore
+     ]
 
   def start(_type, _args) do
     children = [

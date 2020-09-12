@@ -12,6 +12,14 @@ config :metrist_site, MetristSite.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
+config :metrist_site, MetristSite.EventStore,
+   serializer: Commanded.Serialization.JsonSerializer,
+   username: "postgres",
+   password: "postgres",
+   database: "metrist_site_eventstore_test#{System.get_env("MIX_TEST_PARTITION")}",
+   hostname: "localhost",
+   pool_size: 10
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :metrist_site, MetristSiteWeb.Endpoint,

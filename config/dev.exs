@@ -9,6 +9,14 @@ config :metrist_site, MetristSite.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :metrist_site, MetristSite.EventStore,
+   serializer: Commanded.Serialization.JsonSerializer,
+   username: "postgres",
+   password: "postgres",
+   database: "metrist_site_eventstore_dev",
+   hostname: "localhost",
+   pool_size: 10
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

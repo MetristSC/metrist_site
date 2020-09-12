@@ -8,7 +8,9 @@
 use Mix.Config
 
 config :metrist_site,
-  ecto_repos: [MetristSite.Repo]
+  ecto_repos: [MetristSite.Repo],
+  generators: [binary_id: true],
+  event_stores: [MetristSite.EventStore]
 
 # Configures the endpoint
 config :metrist_site, MetristSiteWeb.Endpoint,
