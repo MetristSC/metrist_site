@@ -6,6 +6,8 @@
 * [ ] Add Account creation on registration
 * [ ] Add API key generation
 * [ ] Add Ping handler with API key verification
+* [ ] CI
+* [ ] CD
 * [ ] Go on to agent for now
 
 # Part two
