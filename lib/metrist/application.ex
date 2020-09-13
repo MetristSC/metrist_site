@@ -11,7 +11,8 @@ defmodule Metrist.Application do
       {Phoenix.PubSub, name: Metrist.PubSub},
       MetristWeb.Endpoint,
       Metrist.User.Projector,
-      Metrist.User.RegistrationProcessManager
+      Metrist.User.RegistrationProcessManager,
+      Metrist.Account.Projector.ByOwner
     ]
 
     opts = [strategy: :one_for_one, name: Metrist.Supervisor]

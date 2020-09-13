@@ -4,7 +4,7 @@ defmodule MetristWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
+    plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -17,16 +17,17 @@ defmodule MetristWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    live "/dashboard", DashboardLive
   end
 
   scope "/auth", MetristWeb do
     pipe_through :browser
 
+    post "/logout", AuthController, :delete
+    get "/logout", AuthController, :delete
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
     post "/:provider/callback", AuthController, :callback
-    post "/logout", AuthController, :delete
-    get "/logout", AuthController, :delete
   end
 
   if Mix.env() in [:dev, :test] do
