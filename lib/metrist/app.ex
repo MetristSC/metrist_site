@@ -7,4 +7,5 @@ defmodule Metrist.App do
      ]
 
   router Metrist.User.Router
+  router Metrist.Account.Router
 end

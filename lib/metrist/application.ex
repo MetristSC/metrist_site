@@ -10,7 +10,8 @@ defmodule Metrist.Application do
       MetristWeb.Telemetry,
       {Phoenix.PubSub, name: Metrist.PubSub},
       MetristWeb.Endpoint,
-      Metrist.User.Projector
+      Metrist.User.Projector,
+      Metrist.User.RegistrationProcessManager
     ]
 
     opts = [strategy: :one_for_one, name: Metrist.Supervisor]
