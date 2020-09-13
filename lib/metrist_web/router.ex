@@ -26,6 +26,7 @@ defmodule MetristWeb.Router do
     get "/:provider/callback", AuthController, :callback
     post "/:provider/callback", AuthController, :callback
     post "/logout", AuthController, :delete
+    get "/logout", AuthController, :delete
   end
 
   if Mix.env() in [:dev, :test] do
