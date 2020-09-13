@@ -2,7 +2,7 @@
 
 * [x] Add Commanded
 * [x] Add Überauth + Github auth via tolocalhost.com
-* [ ] Add Login/registration (it's the same!)
+* [x] Add Login/registration (it's the same!)
 * [ ] Add Account creation on registration
 * [ ] Add API key generation
 * [ ] Add Ping handler with API key verification
