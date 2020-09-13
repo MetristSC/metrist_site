@@ -38,6 +38,7 @@ defmodule MetristWeb.AuthController do
   # Some quick copy/pasting from the Überauth example app
   def user_from_auth(%Auth{} = auth) do
     %{id: auth.uid,
+      provider: auth.provider,
       name: name_from_auth(auth),
       avatar: avatar_from_auth(auth)}
   end

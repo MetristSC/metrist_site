@@ -1,4 +1,4 @@
-defmodule MetrisWeb.DashboardLive do
+defmodule MetristWeb.DashboardLive do
   use Phoenix.LiveView
 
   def render(assigns) do
@@ -7,7 +7,10 @@ defmodule MetrisWeb.DashboardLive do
     """
   end
 
-  def mount(_params, _stuff, socket) do
+  def mount(params, stuff, socket) do
+    IO.puts("live dashboard mounted, params = #{inspect params}")
+    IO.puts("                  stuff = #{inspect stuff}")
+    IO.puts("                 socket = #{inspect socket}")
     temperature = 42
     {:ok, assign(socket, :temperature, temperature)}
   end

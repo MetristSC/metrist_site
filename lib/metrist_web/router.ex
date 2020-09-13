@@ -17,7 +17,7 @@ defmodule MetristWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    live "/dashboard", DashboardLive
+    live "/home", DashboardLive
   end
 
   scope "/auth", MetristWeb do

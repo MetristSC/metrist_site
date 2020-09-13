@@ -1,7 +1,7 @@
 <section class="text-center">
   <p class="lead text-muted">
     <%= if @current_user do %>
-      <%= live_render(@conn, MetrisWeb.DashboardLive) %>
+      <%= live_render(@conn, MetristWeb.DashboardLive) %>
     <% else %>
       <h1 class="mb-5">Welcome to metri.st</h1>
       <a class="btn btn-primary btn-lg" href="/auth/github">
