@@ -1,5 +1,5 @@
-defmodule MetristSiteWeb.Router do
-  use MetristSiteWeb, :router
+defmodule MetristWeb.Router do
+  use MetristWeb, :router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -13,13 +13,13 @@ defmodule MetristSiteWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", MetristSiteWeb do
+  scope "/", MetristWeb do
     pipe_through :browser
 
     get "/", PageController, :index
   end
 
-  scope "/auth", MetristSiteWeb do
+  scope "/auth", MetristWeb do
     pipe_through :browser
 
     get "/:provider", AuthController, :request
@@ -33,7 +33,7 @@ defmodule MetristSiteWeb.Router do
 
     scope "/" do
       pipe_through :browser
-      live_dashboard "/dashboard", metrics: MetristSiteWeb.Telemetry
+      live_dashboard "/dashboard", metrics: MetristWeb.Telemetry
     end
   end
 end

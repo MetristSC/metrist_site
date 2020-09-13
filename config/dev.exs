@@ -1,23 +1,23 @@
 use Mix.Config
 
 # Configure your database
-config :metrist_site, MetristSite.Repo,
+config :metrist, Metrist.Repo,
   username: "postgres",
   password: "postgres",
-  database: "metrist_site_dev",
+  database: "metrist_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-config :metrist_site, MetristSite.EventStore,
+config :metrist, Metrist.EventStore,
    serializer: Commanded.Serialization.JsonSerializer,
    username: "postgres",
    password: "postgres",
-   database: "metrist_site_eventstore_dev",
+   database: "metrist_eventstore_dev",
    hostname: "localhost",
    pool_size: 10
 
-config :metrist_site, MetristSiteWeb.Endpoint,
+config :metrist, MetristWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
@@ -32,13 +32,13 @@ config :metrist_site, MetristSiteWeb.Endpoint,
     ]
   ]
 
-config :metrist_site, MetristSiteWeb.Endpoint,
+config :metrist, MetristWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/metrist_site_web/(live|views)/.*(ex)$",
-      ~r"lib/metrist_site_web/templates/.*(eex)$"
+      ~r"lib/metrist_web/(live|views)/.*(ex)$",
+      ~r"lib/metrist_web/templates/.*(eex)$"
     ]
   ]
 

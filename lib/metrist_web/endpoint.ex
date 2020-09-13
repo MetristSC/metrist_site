@@ -1,16 +1,16 @@
-defmodule MetristSiteWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :metrist_site
+defmodule MetristWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :metrist
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
-    key: "_metrist_site_key",
+    key: "_metrist_key",
     signing_salt: "WI9o3BMU"
   ]
 
-  socket "/socket", MetristSiteWeb.UserSocket,
+  socket "/socket", MetristWeb.UserSocket,
     websocket: true,
     longpoll: false
 
@@ -22,7 +22,7 @@ defmodule MetristSiteWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :metrist_site,
+    from: :metrist,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
 
@@ -32,7 +32,7 @@ defmodule MetristSiteWeb.Endpoint do
     socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
     plug Phoenix.LiveReloader
     plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :metrist_site
+    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :metrist
   end
 
   plug Phoenix.LiveDashboard.RequestLogger,
@@ -50,5 +50,5 @@ defmodule MetristSiteWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-  plug MetristSiteWeb.Router
+  plug MetristWeb.Router
 end

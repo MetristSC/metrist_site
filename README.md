@@ -1,4 +1,4 @@
-# MetristSite
+# Metrist
 
 To start your Phoenix server:
 

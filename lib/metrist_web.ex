@@ -1,12 +1,12 @@
-defmodule MetristSiteWeb do
+defmodule MetristWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, views, channels and so on.
 
   This can be used in your application as:
 
-      use MetristSiteWeb, :controller
-      use MetristSiteWeb, :view
+      use MetristWeb, :controller
+      use MetristWeb, :view
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -19,19 +19,19 @@ defmodule MetristSiteWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: MetristSiteWeb
+      use Phoenix.Controller, namespace: MetristWeb
 
       import Plug.Conn
-      import MetristSiteWeb.Gettext
-      alias MetristSiteWeb.Router.Helpers, as: Routes
+      import MetristWeb.Gettext
+      alias MetristWeb.Router.Helpers, as: Routes
     end
   end
 
   def view do
     quote do
       use Phoenix.View,
-        root: "lib/metrist_site_web/templates",
-        namespace: MetristSiteWeb
+        root: "lib/metrist_web/templates",
+        namespace: MetristWeb
 
       # Import convenience functions from controllers
       import Phoenix.Controller,
@@ -54,7 +54,7 @@ defmodule MetristSiteWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import MetristSiteWeb.Gettext
+      import MetristWeb.Gettext
     end
   end
 
@@ -66,9 +66,9 @@ defmodule MetristSiteWeb do
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 
-      import MetristSiteWeb.ErrorHelpers
-      import MetristSiteWeb.Gettext
-      alias MetristSiteWeb.Router.Helpers, as: Routes
+      import MetristWeb.ErrorHelpers
+      import MetristWeb.Gettext
+      alias MetristWeb.Router.Helpers, as: Routes
     end
   end
 

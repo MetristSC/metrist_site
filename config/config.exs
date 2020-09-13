@@ -7,16 +7,16 @@
 # General application configuration
 use Mix.Config
 
-config :metrist_site,
-  ecto_repos: [MetristSite.Repo],
+config :metrist,
+  ecto_repos: [Metrist.Repo],
   generators: [binary_id: true],
-  event_stores: [MetristSite.EventStore]
+  event_stores: [Metrist.EventStore]
 
-config :metrist_site, MetristSiteWeb.Endpoint,
+config :metrist, MetristWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "UFqDE7PnGq+OOMmMj94I9KiS3gN5BcKVhv+0SAZH9ayGD5RZYPoq+VEJmaquMHdk",
-  render_errors: [view: MetristSiteWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: MetristSite.PubSub,
+  render_errors: [view: MetristWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: Metrist.PubSub,
   live_view: [signing_salt: "vrU39nPD"]
 
 config :logger, :console,

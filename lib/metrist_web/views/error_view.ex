@@ -1,5 +1,5 @@
-defmodule MetristSiteWeb.ErrorView do
-  use MetristSiteWeb, :view
+defmodule MetristWeb.ErrorView do
+  use MetristWeb, :view
 
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.

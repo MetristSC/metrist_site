@@ -1,6 +1,6 @@
-defmodule MetristSite do
+defmodule Metrist do
   @moduledoc """
-  MetristSite keeps the contexts that define your domain
+  Metrist keeps the contexts that define your domain
   and business logic.
 
   Contexts are also responsible for managing your data, regardless

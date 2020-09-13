@@ -1,5 +1,5 @@
-defmodule MetristSiteWeb.AuthController do
-  use MetristSiteWeb, :controller
+defmodule MetristWeb.AuthController do
+  use MetristWeb, :controller
   require Logger
 
   plug Ueberauth

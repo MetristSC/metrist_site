@@ -1,5 +1,5 @@
-defmodule MetristSiteWeb.PageControllerTest do
-  use MetristSiteWeb.ConnCase
+defmodule MetristWeb.PageControllerTest do
+  use MetristWeb.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get(conn, "/")

@@ -1,4 +1,4 @@
-defmodule MetristSiteWeb.Telemetry do
+defmodule MetristWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
 
@@ -31,11 +31,11 @@ defmodule MetristSiteWeb.Telemetry do
       ),
 
       # Database Metrics
-      summary("metrist_site.repo.query.total_time", unit: {:native, :millisecond}),
-      summary("metrist_site.repo.query.decode_time", unit: {:native, :millisecond}),
-      summary("metrist_site.repo.query.query_time", unit: {:native, :millisecond}),
-      summary("metrist_site.repo.query.queue_time", unit: {:native, :millisecond}),
-      summary("metrist_site.repo.query.idle_time", unit: {:native, :millisecond}),
+      summary("metrist.repo.query.total_time", unit: {:native, :millisecond}),
+      summary("metrist.repo.query.decode_time", unit: {:native, :millisecond}),
+      summary("metrist.repo.query.query_time", unit: {:native, :millisecond}),
+      summary("metrist.repo.query.queue_time", unit: {:native, :millisecond}),
+      summary("metrist.repo.query.idle_time", unit: {:native, :millisecond}),
 
       # VM Metrics
       summary("vm.memory.total", unit: {:byte, :kilobyte}),
@@ -49,7 +49,7 @@ defmodule MetristSiteWeb.Telemetry do
     [
       # A module, function and arguments to be invoked periodically.
       # This function must call :telemetry.execute/3 and a metric must be added above.
-      # {MetristSiteWeb, :count_users, []}
+      # {MetristWeb, :count_users, []}
     ]
   end
 end
