@@ -11,6 +11,11 @@ defmodule MetristWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+
+  end
+
+  scope "/api", MetristWeb do
+    post "/ping", PingController, :index
   end
 
   scope "/", MetristWeb do

@@ -36,7 +36,7 @@ defmodule Metrist.Account.Projector.ByApiKey do
     case Metrist.Repo.get(Projection.ByApiKey, e.api_key) do
       nil ->
         Ecto.Multi.insert(multi, :account,
-          %Projection.ByApiKey{api_key: e.owner,
+          %Projection.ByApiKey{api_key: e.api_key,
                               account_uuid: e.uuid})
       item ->
         Ecto.Multi.update(multi, :account, update_changeset(item, e))

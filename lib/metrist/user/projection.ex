@@ -18,4 +18,9 @@ defmodule Metrist.User.Projection do
       and u.provider_id == ^id,
       select: u.uuid)
   end
+
+  def by_uuid(uuid) do
+    from(u in __MODULE__,
+      where: u.uuid == ^uuid)
+  end
 end

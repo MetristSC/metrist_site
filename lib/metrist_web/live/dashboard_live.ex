@@ -59,6 +59,7 @@ defmodule MetristWeb.DashboardLive do
     # Same for account id and default api key
     account_uuid = poll_for_account_uuid(pid, owner_uuid)
     poll_for_api_key(pid, account_uuid)
+    "Polling done. Plesae fix this hack"
   end
 
   defp poll_for_owner_uuid(pid, user) do
