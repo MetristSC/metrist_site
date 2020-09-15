@@ -22,6 +22,7 @@ defmodule Metrist.User.RegistrationProcessManager do
     %Metrist.Account.Command.Create{
       uuid: Id.generate(),
       name: "Default Account",
-      owner: uuid}
+      owner: uuid,
+      api_key: UUID.uuid4()}
   end
 end

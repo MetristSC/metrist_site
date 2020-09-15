@@ -4,7 +4,7 @@ defmodule Metrist.Repo.Migrations.CreateAcccountsByOwner do
   def change do
     create table(:accounts_by_owner, primary_key: false) do
       add :owner_uuid, :uuid, primary_key: true
-      add :accounts, {:array, :string}
+      add :account_uuid, :uuid
     end
   end
 end

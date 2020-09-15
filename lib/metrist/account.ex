@@ -15,6 +15,7 @@ defmodule Metrist.Account do
     field :uuid, String.t(), enforce: true
     field :owner, String.t(), enforce: true
     field :name, String.t(), enforce: true
+    field :api_keys, list(String.t()), enforce: true
   end
 
   # Command handlers
@@ -22,7 +23,8 @@ defmodule Metrist.Account do
   def execute(%__MODULE__{uuid: nil}, c = %Command.Create{}) do
     %Event.Created{uuid: c.uuid,
                    owner: c.owner,
-                   name: c.name}
+                   name: c.name,
+                   api_key: c.api_key}
   end
   def execute(_account, %Command.Create{}) do
     # Ignore duplicate registrations
@@ -35,6 +37,7 @@ defmodule Metrist.Account do
     %__MODULE__{account |
                 uuid: e.uuid,
                 owner: e.owner,
-                name: e.name}
+                name: e.name,
+                api_keys: [e.api_key]}
   end
 end

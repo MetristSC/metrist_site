@@ -4,8 +4,7 @@
 * [x] Add Überauth + Github auth via tolocalhost.com
 * [x] Add Login/registration (it's the same!)
 * [x] Add Account creation on registration
-* [ ] Show available accounts and let user select one
-* [ ] Add API key generation
+* [x] Add API key generation and show it
 * [ ] Add Ping handler with API key verification
 * [ ] CI
 * [ ] CD

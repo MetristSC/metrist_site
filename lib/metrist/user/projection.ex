@@ -15,10 +15,7 @@ defmodule Metrist.User.Projection do
   def by_provider_and_id(provider, id) do
     from(u in __MODULE__,
       where: u.provider == ^provider
-      and u.provider_id == ^id)
-  end
-
-  def by_uuid(uuid) do
-    from(u in __MODULE__, where: u.uuid == ^uuid)
+      and u.provider_id == ^id,
+      select: u.uuid)
   end
 end
