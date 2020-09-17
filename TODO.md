@@ -6,6 +6,7 @@
 * [x] Add Account creation on registration
 * [x] Add API key generation and show it
 * [ ] Add Ping handler with API key verification
+* [ ] Add presence and presence display of agents
 * [ ] CI
 * [ ] CD
 * [ ] Go on to agent for now
