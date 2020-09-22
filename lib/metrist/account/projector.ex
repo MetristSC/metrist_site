@@ -37,7 +37,7 @@ defmodule Metrist.Account.Projector.ByApiKey do
       nil ->
         Ecto.Multi.insert(multi, :account,
           %Projection.ByApiKey{api_key: e.api_key,
-                              account_uuid: e.uuid})
+                               account_uuid: e.uuid})
       item ->
         Ecto.Multi.update(multi, :account, update_changeset(item, e))
     end

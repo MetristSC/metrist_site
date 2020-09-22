@@ -8,4 +8,5 @@ defmodule Metrist.App do
 
   router Metrist.User.Router
   router Metrist.Account.Router
+  router Metrist.Node.Router
 end

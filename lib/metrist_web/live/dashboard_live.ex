@@ -9,6 +9,7 @@ defmodule MetristWeb.DashboardLive do
     Account UUID: <%= @account_uuid %>
     <br>
     API Key: <%= @api_key %>
+    <br>
     """
   end
 
@@ -26,21 +27,21 @@ defmodule MetristWeb.DashboardLive do
     |> assign(:owner_uuid, "Fetching...")
     |> assign(:account_uuid, "Fetching...")
     |> assign(:api_key, "Fetching...")
+    |> assign(:nodes, [])
     {:ok, socket}
   end
 
   def handle_info({:owner_uuid, owner_uuid}, socket) do
-    IO.puts("Retrieved owner uuid")
     {:noreply, assign(socket, :owner_uuid, owner_uuid)}
   end
 
   def handle_info({:account_uuid, account_uuid}, socket) do
-    IO.puts("Retrieved account uuid")
+    # TODO subscribe to registry for the account, fetch
+    # currently active nodes.
     {:noreply, assign(socket, :account_uuid, account_uuid)}
   end
 
   def handle_info({:api_key, api_key}, socket) do
-    IO.puts("Retrieved owner uuid")
     {:noreply, assign(socket, :api_key, api_key)}
   end
 
@@ -59,7 +60,7 @@ defmodule MetristWeb.DashboardLive do
     # Same for account id and default api key
     account_uuid = poll_for_account_uuid(pid, owner_uuid)
     poll_for_api_key(pid, account_uuid)
-    "Polling done. Plesae fix this hack"
+    "Polling done. Maybe fix this hack"
   end
 
   defp poll_for_owner_uuid(pid, user) do
@@ -72,7 +73,6 @@ defmodule MetristWeb.DashboardLive do
       Process.sleep(1_000)
       poll_for_owner_uuid(pid, user)
     else
-      IO.puts("Got owner_uuid: #{inspect result}, telling #{inspect pid}")
       send(pid, {:owner_uuid, result})
       result
     end
@@ -85,7 +85,6 @@ defmodule MetristWeb.DashboardLive do
       Process.sleep(1_000)
       poll_for_account_uuid(pid, owner_uuid)
     else
-      IO.puts("Got account_uuid: #{inspect result}")
       send(pid, {:account_uuid, result})
       result
     end
@@ -98,7 +97,6 @@ defmodule MetristWeb.DashboardLive do
       Process.sleep(1_000)
       poll_for_api_key(pid, account_uuid)
     else
-      IO.puts("Got api key: #{inspect result}")
       send(pid, {:api_key, result})
       result
     end

@@ -1,6 +1,6 @@
 version: '3'
 services:
-  mydb:
+  postgres:
     image: postgres
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -8,6 +8,14 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=postgres
+  influx:
+    image: influxdb
+    volumes:
+      - ts-data:/var/lib/influxdb
+    ports:
+      - 8086:8086
 volumes:
   db-data:
+    driver: local
+  ts-data:
     driver: local

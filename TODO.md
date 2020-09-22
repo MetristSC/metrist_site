@@ -5,8 +5,9 @@
 * [x] Add Login/registration (it's the same!)
 * [x] Add Account creation on registration
 * [x] Add API key generation and show it
-* [ ] Add Ping handler with API key verification
-* [ ] Add presence and presence display of agents
+* [x] Add Ping handler with API key verification
+* [ ] Register agents. De-register them after 4 hours no ping. Persistent through events.
+* [ ] Show dynamic list of agents on dashboard (Registry?)
 * [ ] CI
 * [ ] CD
 * [ ] Go on to agent for now
