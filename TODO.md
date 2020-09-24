@@ -1,4 +1,4 @@
-# Part one
+# [ ] Part one
 
 * [x] Add Commanded
 * [x] Add Überauth + Github auth via tolocalhost.com
@@ -7,31 +7,34 @@
 * [x] Add API key generation and show it
 * [x] Add Ping handler with API key verification
 * [ ] Register agents. De-register them after 4 hours no ping. Persistent through events.
+      Pings probably need to bypass the root aggregate, a separate process is probably a good idea.
+      If the process times out, it can send the Node a deregister command.
+      Node events (created, active, deregister) need to be handled by a registry
 * [ ] Show dynamic list of agents on dashboard (Registry?)
 * [ ] CI
 * [ ] CD
 * [ ] Go on to agent for now
 
-# Part two
+# [ ] Part two
 
 * [ ] Receive snapshots of metrics
 * [ ] Simple dashboard of snapshots
 * [ ] Add live view button to graph, returns request on next ping
 * [ ] Back to agent for now
 
-# Part three
+# [ ] Part three
 
 * [ ] Display live view requests by just re-routing agent data
 * [ ] Figure out how to stop
 * [ ] Allow monitoring code to be entered and pushed back to a selection of agents (Luerl)
 * [ ] Go back to agent for now.
 
-# Part four
+# [ ] Part four
 
 * [ ] Process fetch all monitors command and return all monitors for the instance
 * [ ] Go back to agent
 
-# Part five
+# [ ] Part five
 
 * [ ] Status conditions can be received and displayed on dashboard
 * [ ] User can configure webhooks and emails for status conditions
