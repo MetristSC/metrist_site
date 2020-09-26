@@ -12,7 +12,6 @@ defmodule MetristWeb.PingController do
       :ok -> text(conn, "pong")
       error  -> text(conn, error)
     end
-    # TODO API verification, start a server, etcetera.
   end
 
   defp verify_request(%{"api_key" => api_key,
@@ -33,7 +32,7 @@ defmodule MetristWeb.PingController do
 
   def verify_request(acct, _payload, params) do
     Logger.debug("Valid request for account #{inspect acct}")
-    Metrist.Node.NodePing.ping_received(acct.account_uuid,
+    Metrist.Node.Presence.ping_received(acct.account_uuid,
       params["node_id"])
     :ok
   end

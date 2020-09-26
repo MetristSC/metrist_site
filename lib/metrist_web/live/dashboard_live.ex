@@ -10,14 +10,13 @@ defmodule MetristWeb.DashboardLive do
     <br>
     API Key: <%= @api_key %>
     <br>
+    Agent(s) known: <%= inspect(@nodes) %>
     """
   end
 
   def mount(_params, session, socket) do
     pid = self()
-    IO.puts("I am pid #{inspect pid}")
     if connected?(socket) do
-      IO.puts("Starting poll")
       Task.async(fn -> poll_for_data(pid, session["current_user"]) end)
     else
       IO.puts("Hmm... socket not connected...")
@@ -36,13 +35,28 @@ defmodule MetristWeb.DashboardLive do
   end
 
   def handle_info({:account_uuid, account_uuid}, socket) do
-    # TODO subscribe to registry for the account, fetch
-    # currently active nodes.
-    {:noreply, assign(socket, :account_uuid, account_uuid)}
+    nodes = account_uuid
+    |> Metrist.Node.PresenceSupervisor.all_for()
+    |> Enum.map(fn {node, _pid} -> node end)
+    |> MapSet.new()
+    Metrist.Node.Presence.subscribe(account_uuid)
+    socket = socket
+    |> assign(:account_uuid, account_uuid)
+    |> assign(:nodes, nodes)
+    {:noreply, socket}
   end
 
   def handle_info({:api_key, api_key}, socket) do
     {:noreply, assign(socket, :api_key, api_key)}
+  end
+  def handle_info({:node_state_change, node_data}, socket) do
+    current_nodes = socket.assigns.nodes
+    current_nodes = if node_data.to_state == :inactive do
+      MapSet.delete(current_nodes, node_data.node_id)
+    else
+      MapSet.put(current_nodes, node_data.node_id)
+    end
+    {:noreply, assign(socket, :nodes, current_nodes)}
   end
 
   def handle_info(msg, socket) do

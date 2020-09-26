@@ -14,7 +14,8 @@ defmodule Metrist.Application do
       Metrist.User.RegistrationProcessManager,
       Metrist.Account.Projector.ByOwner,
       Metrist.Account.Projector.ByApiKey,
-      Metrist.Node.Projector
+      Metrist.Node.Projector,
+      Metrist.Node.PresenceSupervisor,
     ]
 
     opts = [strategy: :one_for_one, name: Metrist.Supervisor]

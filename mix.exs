@@ -51,7 +51,8 @@ defmodule Metrist.MixProject do
       {:commanded_ecto_projections, "~> 1.2"},
       {:ueberauth_github, "~> 0.8.0"},
       {:typed_struct, "~> 0.2.1"},
-      {:elixir_uuid, "~> 1.2"}
+      {:elixir_uuid, "~> 1.2"},
+      {:phoenix_pubsub, "~> 2.0"}
     ]
   end
 
