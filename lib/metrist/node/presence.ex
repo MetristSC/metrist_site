@@ -13,7 +13,7 @@ defmodule Metrist.Node.Presence do
   all nodes that are alive/dormant in the database in case
   they don't show up.
   """
-  use GenServer
+  use GenServer, restart: :transient
   require Logger
 
 if Mix.env == :dev do
@@ -37,6 +37,7 @@ end
   Register a received ping. Starts a server if needed.
   """
   def ping_received(account_uuid, node_id) do
+    Logger.info("Processing ping for #{account_uuid}/#{node_id}")
     server = Metrist.Node.PresenceSupervisor.find_or_start_child(account_uuid, node_id)
     GenServer.cast(server, :ping_received)
   end
@@ -71,11 +72,13 @@ end
 
   @impl true
   def handle_info(:timeout, state = %State{state: :alive}) do
+    Logger.debug("Timeout received in alive state")
     broadcast_state_change(state, :dormant)
     state = schedule_timeout(state, :dormant)
     {:noreply, state, :hibernate}
   end
   def handle_info(:timeout, state = %State{state: :dormant}) do
+    Logger.debug("Timeout received in dormant state")
     broadcast_state_change(state, :inactive)
     {:stop, :normal, %State{state | state: :inactive}}
   end
@@ -93,7 +96,7 @@ end
     message = {:node_state_change, %{account_uuid: state.account_uuid,
                               node_id: state.node_id,
                               to_state: new_state}}
-    Logger.debug("Broadcast on #{inspect topic}: #{inspect message}")
+    Logger.debug("#{inspect self} broadcast on #{inspect topic} from state #{state.state}: #{inspect message}")
     Phoenix.PubSub.broadcast(Metrist.PubSub, topic, message)
   end
 
