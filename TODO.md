@@ -6,14 +6,18 @@
 * [x] Add Account creation on registration
 * [x] Add API key generation and show it
 * [x] Add Ping handler with API key verification
-* [ ] Register agents. De-register them after 4 hours no ping. Persistent through events.
+* [x] Register agents. De-register them after 4 hours no ping. Persistent through events.
       Pings probably need to bypass the root aggregate, a separate process is probably a good idea.
       If the process times out, it can send the Node a deregister command.
       Node events (created, active, deregister) need to be handled by a registry
-* [ ] Show dynamic list of agents on dashboard (Registry?)
-* [ ] CI
-* [ ] CD
-* [ ] Go on to agent for now
+* [ ] Add node state to persistence and read everything on startup.
+      This includes knowing when the last state change happened so we can correctly
+      re-schedule timeouts (or do state changes if they already happened. But shouldn't
+      we then wait a bit for agents to have a chance to check-in?
+      Also, persistent state should be used when a ping is used. <== This probably first.
+* [x] Show dynamic list of agents on dashboard (Registry?)
+* [ ] CI and CD
+* [x] Go on to agent for now
 
 # [ ] Part two
 

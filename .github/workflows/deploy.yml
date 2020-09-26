@@ -1,0 +1,38 @@
+name: Deploy master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build, push, and deploy
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Code checkout
+      uses: actions/checkout@v2
+
+    - name: Restore asdf-vm
+      id: asdf-vm-cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.asdf
+        key: 20.04-asdf-${{ hashFiles('.tool-versions') }}
+
+    - name: Install asdf-vm
+      uses: asdf-vm/actions/install@v1
+      if: steps.asdf-vm-cache.outputs.cache-hit != 'true'
+
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: deps
+        key: 20.04-mix-${{ hashFiles('**/mix.lock') }}
+
+    - name: The works
+      run: make dist
+
+    - name: Copy image to production
+      run: echo Copy Image To Production
