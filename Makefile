@@ -1,10 +1,15 @@
 
 .PHONY: test deploy
 
-test:
+test: deps
 	npm install --prefix assets
-	MIX_ENV=test mix do deps.get, test
+	MIX_ENV=test mix test
 
-deploy:
-	#npm install --prefix assets
-	MIX_ENV=prod mix do deps.get, phx.digest, release
+dist: test
+	npm install --prefix assets
+	MIX_ENV=prod mix do phx.digest, release
+
+deps:
+	mix local.hex --force
+	mix local.rebar --force
+	mix deps.get
