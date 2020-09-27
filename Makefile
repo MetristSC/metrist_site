@@ -1,3 +1,6 @@
+# For Github actions, make sure we have everything in the path even if
+# we're running in a half-complete restored asdf-vm environment.
+export PATH := $(PATH):$(HOME)/.asdf/shims
 
 .PHONY: test deploy
 
