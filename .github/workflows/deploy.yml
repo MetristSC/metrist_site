@@ -33,6 +33,8 @@ jobs:
 
     - name: The works
       run: make dist
+      env:
+        PHOENIX_SECRET_KEY_BASE: ${{ secrets.PHOENIX_SECRET_KEY_BASE }}
 
     - name: Copy image to production
       run: echo Copy Image To Production
