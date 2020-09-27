@@ -17,6 +17,10 @@
       Also, persistent state should be used when a ping is used. <== This probably first.
 * [x] Show dynamic list of agents on dashboard (Registry?)
 * [ ] CI and CD
+      - [ ] Add Elixir runtime config for ~metrist/passwords.sh env vars
+      - [ ] Wrapper script that reads ~metrist/passwords.sh (don't forget `set -e`)
+      - [ ] User-level systemd config
+      - [ ] Cronjob to check for a new release every minute (rotate out the old one)
 * [x] Go on to agent for now
 
 # [ ] Part two
@@ -43,3 +47,8 @@
 * [ ] Status conditions can be received and displayed on dashboard
 * [ ] User can configure webhooks and emails for status conditions
 * [ ] Status conditions trigger webhooks and emails.
+
+# [ ] Odds and ends
+
+* [ ] Show help on the site when zero agents report in, on-demand otherwise
+* [ ] Actual nice upgrades. No clue how.
