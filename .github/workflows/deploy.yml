@@ -45,4 +45,4 @@ jobs:
         KEY: ${{ secrets.PROD_DEPLOY_KEY }}
       with:
         source: "_build/prod/metrist-0.1.0.tar.gz"
-        target: "/tmp"
+        target: "/tmp/metrist-0.1.0.tar.gz"
