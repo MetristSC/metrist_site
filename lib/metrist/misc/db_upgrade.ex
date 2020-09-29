@@ -7,9 +7,9 @@ defmodule Metrist.Misc.DbUpgrade do
 
   def run() do
     Application.ensure_loaded(:metrist)
-    ensure_repo_exists()
+    #ensure_repo_exists()
     ensure_eventstore_exists()
-    upgrade_repo()
+    #upgrade_repo()
     upgrade_eventstore()
   end
 
