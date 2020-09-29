@@ -1,4 +1,4 @@
-# [ ] Part one
+# [x] Part one
 
 * [x] Add Commanded
 * [x] Add Überauth + Github auth via tolocalhost.com
@@ -10,21 +10,21 @@
       Pings probably need to bypass the root aggregate, a separate process is probably a good idea.
       If the process times out, it can send the Node a deregister command.
       Node events (created, active, deregister) need to be handled by a registry
+* [x] Show dynamic list of agents on dashboard (Registry?)
+* [x] CI and CD
+      - [x] Add Elixir runtime config for ~metrist/passwords.sh env vars
+      - [x] Wrapper script that reads ~metrist/passwords.sh (don't forget `set -e`)
+      - [x] User-level systemd config
+      - [x] Cronjob to check for a new release every minute (rotate out the old one)
+* [x] Go on to agent for now
+
+# [ ] Part two
+
 * [ ] Add node state to persistence and read everything on startup.
       This includes knowing when the last state change happened so we can correctly
       re-schedule timeouts (or do state changes if they already happened. But shouldn't
       we then wait a bit for agents to have a chance to check-in?
       Also, persistent state should be used when a ping is used. <== This probably first.
-* [x] Show dynamic list of agents on dashboard (Registry?)
-* [ ] CI and CD
-      - [ ] Add Elixir runtime config for ~metrist/passwords.sh env vars
-      - [ ] Wrapper script that reads ~metrist/passwords.sh (don't forget `set -e`)
-      - [ ] User-level systemd config
-      - [ ] Cronjob to check for a new release every minute (rotate out the old one)
-* [x] Go on to agent for now
-
-# [ ] Part two
-
 * [ ] Receive snapshots of metrics
 * [ ] Simple dashboard of snapshots
 * [ ] Add live view button to graph, returns request on next ping
