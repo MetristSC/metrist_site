@@ -55,7 +55,8 @@ defmodule Metrist.MixProject do
       {:ueberauth_github, "~> 0.8.0"},
       {:typed_struct, "~> 0.2.1"},
       {:elixir_uuid, "~> 1.2"},
-      {:phoenix_pubsub, "~> 2.0"}
+      {:phoenix_pubsub, "~> 2.0"},
+      {:instream, "~> 1.0"}
     ]
   end
 

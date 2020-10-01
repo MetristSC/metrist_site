@@ -6,8 +6,6 @@ defmodule MetristWeb.PingController do
   require Logger
 
   def index(conn, params) do
-    Logger.info("Ping received! #{inspect params}")
-    Logger.info("     #{inspect conn}")
     case verify_request(params) do
       :ok -> text(conn, "pong")
       error  -> text(conn, error)
@@ -15,7 +13,7 @@ defmodule MetristWeb.PingController do
   end
 
   defp verify_request(%{"api_key" => api_key,
-                       "payload" => payload} = params) do
+                        "payload" => payload} = params) do
     account = Metrist.Account.Projection.ByApiKey.by_api_key(api_key)
     |> Metrist.Repo.one()
     verify_request(account, payload, params)
@@ -29,12 +27,19 @@ defmodule MetristWeb.PingController do
     Logger.info("Unknown API key/account #{inspect params}")
     :unkown_key
   end
-
   def verify_request(acct, _payload, params) do
-    Logger.debug("Valid request for account #{inspect acct}")
-    Metrist.Node.Presence.ping_received(acct.account_uuid,
-      params["node_id"])
+    account_uuid = acct.account_uuid
+    node_id = params["node_id"]
+
+    Metrist.Node.Presence.ping_received(account_uuid, node_id)
+    handle_payload(account_uuid, node_id, params["payload"])
     :ok
   end
+
+  defp handle_payload(_acct, _node_id, nil), do: :ok
+  defp handle_payload(acct, node_id, payload) do
+    Metrist.InfluxStore.write_from_agent(acct, node_id, payload)
+  end
+
 
 end

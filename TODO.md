@@ -25,7 +25,7 @@
       re-schedule timeouts (or do state changes if they already happened. But shouldn't
       we then wait a bit for agents to have a chance to check-in?
       Also, persistent state should be used when a ping is used. <== This probably first.
-* [ ] Receive snapshots of metrics
+* [x] Receive snapshots of metrics
 * [ ] Simple dashboard of snapshots
 * [ ] Add live view button to graph, returns request on next ping
 * [ ] Back to agent for now
@@ -51,4 +51,7 @@
 # [ ] Odds and ends
 
 * [ ] Show help on the site when zero agents report in, on-demand otherwise
-* [ ] Actual nice upgrades. No clue how.
+* [ ] Actual nice upgrades in prod. No clue how.
+* [ ] OpenTelemetry instead of homebrew agent protocol?
+* [ ] Make what agent sends more compatible with influxdb timeseries. Currently we send
+      tags per value (field), but they get flattened.

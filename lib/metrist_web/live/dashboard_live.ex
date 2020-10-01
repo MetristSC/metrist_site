@@ -2,7 +2,6 @@ defmodule MetristWeb.DashboardLive do
   use Phoenix.LiveView
 
   def render(assigns) do
-    IO.puts("rendering with assigns: #{inspect assigns}")
     ~L"""
     Owner UUID: <%= @owner_uuid %>
     <br>
@@ -10,7 +9,27 @@ defmodule MetristWeb.DashboardLive do
     <br>
     API Key: <%= @api_key %>
     <br>
-    Agent(s) known: <%= inspect(@nodes) %>
+    <table>
+      <tr>
+        <th>Agent</th>
+        <th>Series</th>
+      </tr>
+      <%= for node <- @nodes do %>
+      <tr>
+        <td><%= node %></td>
+        <td>
+          <% series = Metrist.InfluxStore.series_of(@account_uuid, node) %>
+          <%= for serie <- series do %>
+            <div style="cursor: pointer"
+                 phx-click="showseries"
+                 phx-value-agent="<%= node %>"
+                 phx-value-serie="<%= serie %>"
+               ><%= serie %></dev>
+          <% end %>
+        </td>
+      </tr>
+      <% end %>
+    </table>
     """
   end
 
@@ -61,6 +80,12 @@ defmodule MetristWeb.DashboardLive do
 
   def handle_info(msg, socket) do
     IO.puts("Hmm... #{inspect msg}")
+    {:noreply, socket}
+  end
+
+
+  def handle_event("showseries", %{"agent" => agent, "serie" => serie}, socket) do
+    IO.puts("Hey, we need to show a series!")
     {:noreply, socket}
   end
 

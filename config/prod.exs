@@ -16,6 +16,9 @@ config :metrist, Metrist.EventStore,
    hostname: "localhost",
    pool_size: 10
 
+config :metrist, Metrist.InfluxStore,
+  database: "metrist_prod"
+
 # We have the shared secret key base in Github so all the builds
 # have the same one, independent of node, too. So we burn it into
 # the release at compile time.

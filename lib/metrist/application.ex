@@ -16,6 +16,7 @@ defmodule Metrist.Application do
       Metrist.Account.Projector.ByApiKey,
       Metrist.Node.Projector,
       Metrist.Node.PresenceSupervisor,
+      Metrist.InfluxStore
     ]
 
     opts = [strategy: :one_for_one, name: Metrist.Supervisor]

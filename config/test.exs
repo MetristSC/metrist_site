@@ -20,6 +20,9 @@ config :metrist, Metrist.EventStore,
    hostname: "localhost",
    pool_size: 10
 
+config :metrist, Metrist.InfluxStore,
+  database: "metrist_test"
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :metrist, MetristWeb.Endpoint,

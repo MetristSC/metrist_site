@@ -17,6 +17,9 @@ config :metrist, Metrist.EventStore,
    hostname: "localhost",
    pool_size: 10
 
+config :metrist, Metrist.InfluxStore,
+  database: "metrist_dev"
+
 config :metrist, MetristWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
