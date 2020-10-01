@@ -1,14 +1,37 @@
 defmodule MetristWeb.DashboardLive do
   use Phoenix.LiveView
 
+  # Render a graph. As soon as this is done
+  # TODO componentize this by compartmentalizing
+  # markup (https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#module-compartmentalizing-markup-and-events-with-render-live_render-and-live_component)
+  # What we need:
+  # - Display a Chart.js empty graph with current data
+  # Then, to update, either:
+  # - Every minute re-query and show (simple)
+  # Or, according to https://hexdocs.pm/phoenix_live_view/js-interop.html#content:
+  # - Dump updates in a hidden div
+  # - Have a hook pull the updates and update the chart
+  # This would require us to hook into the update
+  # event stream (and therefore, somehow _make_ this
+  # an event stream, currently the data goes straight
+  # to InfluxDB
+  #
+  # For starters, polling and completely redoing the
+  # graph is probably simpler. Separate the graph setup
+  # and the data setup in different nodes might even make
+  # it look nice. This also lets us use influx to select
+  # a data range and scroll and shit.
+  def render(assigns = %{show_serie: true}) do
+    ~L"""
+    (graph of <%= @serie %> here)
+    <br>
+    We should graph: <%= inspect Metrist.InfluxStore.fields_of(@serie) %>
+    """
+  end
+
   def render(assigns) do
     ~L"""
-    Owner UUID: <%= @owner_uuid %>
-    <br>
-    Account UUID: <%= @account_uuid %>
-    <br>
-    API Key: <%= @api_key %>
-    <br>
+    <%= unless is_nil(@nodes) do %>
     <table>
       <tr>
         <th>Agent</th>
@@ -30,6 +53,13 @@ defmodule MetristWeb.DashboardLive do
       </tr>
       <% end %>
     </table>
+    <% end %>
+    <br>
+    Owner UUID: <%= @owner_uuid %>
+    <br>
+    Account UUID: <%= @account_uuid %>
+    <br>
+    API Key: <%= @api_key %>
     """
   end
 
@@ -85,7 +115,10 @@ defmodule MetristWeb.DashboardLive do
 
 
   def handle_event("showseries", %{"agent" => agent, "serie" => serie}, socket) do
-    IO.puts("Hey, we need to show a series!")
+    socket = socket
+    |> assign(:show_serie, true)
+    |> assign(:agent, agent)
+    |> assign(:serie, serie)
     {:noreply, socket}
   end
 

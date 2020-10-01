@@ -11,7 +11,7 @@ defmodule Metrist.InfluxStore do
         tags = if unit == "", do: tags, else: Map.put(tags, "unit", unit)
         tags = Map.put(tags, "kind", kind)
         %{
-          measurement: measurement,
+          measurement: "#{account_uuid}/#{node_id}/#{measurement}",
           fields: %{field_name => value},
           tags: tags,
           timestamp: timestamp
@@ -23,12 +23,16 @@ defmodule Metrist.InfluxStore do
   end
 
   def series_of(account_uuid, node_id) do
-    query = "SHOW SERIES WHERE account_uuid = '#{account_uuid}' AND node_id = '#{node_id}'"
+    query = "SHOW MEASUREMENTS WHERE account_uuid = '#{account_uuid}' AND node_id = '#{node_id}'"
     IO.puts("Querying: #{query}")
     %{results: [%{series: [%{values: values}]}]} = query(query)
-    Enum.map(values, fn [value] ->
-      [series | _] = String.split(value, ",")
-      series
-    end)
+    List.flatten(values)
   end
+
+  def fields_of(series) do
+    query = ~s/SHOW FIELD KEYS FROM "#{series}"/
+    %{results: [%{series: [%{values: values}]}]} = query(query)
+    values
+  end
+
 end
