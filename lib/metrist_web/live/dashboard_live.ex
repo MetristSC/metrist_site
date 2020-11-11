@@ -31,16 +31,18 @@ defmodule MetristWeb.DashboardLive do
 
   def render(assigns) do
     ~L"""
-    <%= unless is_nil(@nodes) do %>
-    <table>
-      <tr>
+    <%= if is_nil(@nodes) or MapSet.size(@nodes) == 0 do %>
+    (Waiting for agents to register)
+    <% else %>
+    <table class="border border-gray-500">
+      <tr class="bg-blue-300">
         <th>Agent</th>
         <th>Series</th>
       </tr>
       <%= for node <- @nodes do %>
       <tr>
-        <td><%= node %></td>
-        <td>
+        <td class="border p-2"><%= node %></td>
+        <td class="border p-2">
           <% series = Metrist.InfluxStore.series_of(@account_uuid, node) %>
           <%= for serie <- series do %>
             <div style="cursor: pointer"
@@ -54,12 +56,13 @@ defmodule MetristWeb.DashboardLive do
       <% end %>
     </table>
     <% end %>
-    <br>
+    <div class="mt-2">
     Owner UUID: <%= @owner_uuid %>
     <br>
     Account UUID: <%= @account_uuid %>
     <br>
     API Key: <%= @api_key %>
+    </div>
     """
   end
 
@@ -75,7 +78,7 @@ defmodule MetristWeb.DashboardLive do
     |> assign(:owner_uuid, "Fetching...")
     |> assign(:account_uuid, "Fetching...")
     |> assign(:api_key, "Fetching...")
-    |> assign(:nodes, [])
+    |> assign(:nodes, MapSet.new())
     {:ok, socket}
   end
 

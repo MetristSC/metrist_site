@@ -1,4 +1,4 @@
-<div>
+<div class="m-2">
   <%= if @current_user do %>
   <%= live_render(@conn, MetristWeb.DashboardLive) %>
   <% else %>

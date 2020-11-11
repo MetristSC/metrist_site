@@ -25,8 +25,8 @@
 </head>
 
 <body>
-  <div id="header" class="flex fixed m-2 top-0 h-16 p-2 border-b-2 z-50 w-full place-items-center">
-    <div class="flex-none flex-row mr-8">
+  <div id="header" class="flex flex-row fixed m-2 top-0 h-16 p-2 border-b-2 z-50 w-full place-items-center">
+    <div class="flex-none mr-8">
       <a href="/"><span id="logo-small">(m)</span> metri.st</a>
     </div>
       <%= if @current_user do %>
@@ -36,7 +36,7 @@
                 class: "nav-link" %>
           </div>
         <% end %>
-        <div class="flex flex-row flex-none space-x-2 place-items-center mr-4">
+        <div class="flex flex-none space-x-2 place-items-center mr-4">
           <div class="flex-none"><%= @current_user.name %></div>
           <img class="flex-none object-scale-down h-8 rounded-full" src="<%= @current_user.avatar %>">
           <a class="flex-none" href="/logout">(Logout)</a>
