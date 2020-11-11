@@ -23,6 +23,7 @@ defmodule MetristWeb.Router do
 
     get "/", PageController, :index
     live "/home", DashboardLive
+    live "/series", NodeSeriesLive
   end
 
   scope "/auth", MetristWeb do
