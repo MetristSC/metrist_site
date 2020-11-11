@@ -1,13 +1,15 @@
-<section class="text-center">
-  <p class="lead text-muted">
-    <%= if @current_user do %>
-      <%= live_render(@conn, MetristWeb.DashboardLive) %>
-    <% else %>
-      <h1 class="mb-5">Welcome to metri.st</h1>
-      <a class="btn btn-primary btn-lg" href="/auth/github">
-      <i class="fa fa-github"></i>
-      Sign in with GitHub
+<div>
+  <%= if @current_user do %>
+  <%= live_render(@conn, MetristWeb.DashboardLive) %>
+  <% else %>
+  <div class="p-16">
+    <h1>Welcome to metri.st</h1>
+    <p>
+      <a href="/auth/github">
+        <i class="fa fa-github"></i>
+        Sign in with GitHub
       </a>
-    <% end %>
-  </p>
-</section>
+    </p>
+  </div>
+  <% end %>
+</div>
