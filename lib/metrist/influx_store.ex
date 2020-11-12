@@ -35,4 +35,13 @@ defmodule Metrist.InfluxStore do
     values
   end
 
+  def values_for(series, field) do
+    query = ~s/SELECT #{field} from "#{series}"/
+    %{results: [%{series: [%{values: values}]}]} = query(query)
+    Enum.map(values, fn [ts, v] ->
+      {:ok, dt, 0} = DateTime.from_iso8601(ts)
+      ut = DateTime.to_unix(dt, :microsecond)
+      [ut, v]
+    end)
+  end
 end

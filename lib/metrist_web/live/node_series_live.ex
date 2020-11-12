@@ -6,9 +6,9 @@ defmodule MetristWeb.NodeSeriesLive do
   @impl true
   def render(assigns) do
     ~L"""
-    <%= for [metric, _type] <- Metrist.InfluxStore.fields_of(@series) do %>
-      <%= id = @series <> "." <> metric
-          live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, metric: metric %>
+    <%= for field <- @fields do %>
+      <%= id = @series <> "." <> field
+          live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field %>
     <% end %>
     <br>
     <%= inspect assigns %>
@@ -22,6 +22,7 @@ defmodule MetristWeb.NodeSeriesLive do
     socket = socket
     |> assign(:agent, params["agent_name"])
     |> assign(:series, params["agent_uuid"] <> "/" <> params["agent_name"] <> "/" <> params["series_name"])
+    |> assign_fields()
     {:noreply, socket}
   end
   def handle_params(params = %{"agent" => _}, _uri, socket) do
@@ -29,7 +30,14 @@ defmodule MetristWeb.NodeSeriesLive do
     socket = socket
     |> assign(:agent, params["agent"])
     |> assign(:series, params["series"])
+    |> assign_fields()
     {:noreply, socket}
+  end
+
+  defp assign_fields(socket) do
+    fields = Metrist.InfluxStore.fields_of(socket.assigns.series)
+    fields = Enum.map(fields, fn [field_name, _type] -> field_name end)
+    assign(socket, :fields, fields)
   end
 
   # TODO one day we need security checks here.

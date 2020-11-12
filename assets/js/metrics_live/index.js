@@ -463,6 +463,8 @@ const PhxChartComponent = {
       let newSize = chartEl.getBoundingClientRect()
       this.chart.resize(newSize)
     }))
+
+    this.updated() // TODO remove me once we update with history, etc.
   },
   updated() {
     const data = Array

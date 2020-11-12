@@ -34,25 +34,26 @@ defmodule MetristWeb.ChartComponent do
 
   @impl true
   def render(assigns) do
+    # TODO move this to a push update style.
+    data = Metrist.InfluxStore.values_for(assigns.series, assigns.field)
     ~L"""
     <div class="">
-    <%= inspect assigns %>
       <div id="chart-<%= @id %>" class="card">
         <div class="card-body">
           <div phx-hook="PhxChartComponent" id="chart-<%= @id %>--datasets" style="display:none;">
-          <%= for {x, y, z} <- @data do %>
-            <span data-x="<%= x || @label %>" data-y="<%= y %>" data-z="<%= z %>"></span>
+          <%= for [time, value] <- data do %>
+            <span data-x="<%= @field %>" data-y="<%= value %>" data-z="<%= time %>"></span>
           <% end %>
           </div>
           <div class="chart"
               id="chart-ignore-<%= @id %>"
               phx-update="ignore"
-              data-label="<%= "@label" %>"
-              data-metric="<%= "counter" %>"
-              data-title="<%= "@title" %>"
-              data-tags="<%= "@tags" %>"
-              data-unit="<%= "@unit" %>"
-              data-prune-threshold="<%= "@prune_threshold" %>">
+              data-label="<%= @field %>"
+              data-metric="<%= "summary" %>"
+              data-title="<%= "#{@series}.#{@field}" %>"
+              data-tags="<%= "" %>"
+              data-unit="KB"
+              data-prune-threshold="10000">
           </div>
         </div>
       </div>
