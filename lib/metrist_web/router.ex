@@ -5,6 +5,7 @@ defmodule MetristWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
+    plug :put_root_layout, {MetristWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -23,7 +24,9 @@ defmodule MetristWeb.Router do
 
     get "/", PageController, :index
     live "/home", DashboardLive
-    live "/series", NodeSeriesLive
+    live "/series/:agent/:series", NodeSeriesLive
+    # Work-around for having slashes in names... TODO new naming scheme
+    live "/series/:agent_name/:agent_uuid/:agent_name/:series_name", NodeSeriesLive
   end
 
   scope "/auth", MetristWeb do

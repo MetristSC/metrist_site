@@ -1,7 +1,4 @@
 <div class="m-2">
-  <%= if @current_user do %>
-  <%= live_render(@conn, MetristWeb.DashboardLive) %>
-  <% else %>
   <div class="p-16">
     <h1>Welcome to metri.st</h1>
     <p>
@@ -11,5 +8,4 @@
       </a>
     </p>
   </div>
-  <% end %>
 </div>

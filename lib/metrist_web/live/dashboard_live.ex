@@ -1,33 +1,7 @@
 defmodule MetristWeb.DashboardLive do
   use Phoenix.LiveView
 
-  # Render a graph. As soon as this is done
-  # TODO componentize this by compartmentalizing
-  # markup (https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#module-compartmentalizing-markup-and-events-with-render-live_render-and-live_component)
-  # What we need:
-  # - Display a Chart.js empty graph with current data
-  # Then, to update, either:
-  # - Every minute re-query and show (simple)
-  # Or, according to https://hexdocs.pm/phoenix_live_view/js-interop.html#content:
-  # - Dump updates in a hidden div
-  # - Have a hook pull the updates and update the chart
-  # This would require us to hook into the update
-  # event stream (and therefore, somehow _make_ this
-  # an event stream, currently the data goes straight
-  # to InfluxDB
-  #
-  # For starters, polling and completely redoing the
-  # graph is probably simpler. Separate the graph setup
-  # and the data setup in different nodes might even make
-  # it look nice. This also lets us use influx to select
-  # a data range and scroll and shit.
-  def render(assigns = %{show_serie: true}) do
-    ~L"""
-    (graph of <%= @serie %> here)
-    <br>
-    We should graph: <%= inspect Metrist.InfluxStore.fields_of(@serie) %>
-    """
-  end
+  alias MetristWeb.Router.Helpers, as: Routes
 
   def render(assigns) do
     ~L"""
@@ -45,11 +19,9 @@ defmodule MetristWeb.DashboardLive do
         <td class="border p-2">
           <% series = Metrist.InfluxStore.series_of(@account_uuid, node) %>
           <%= for serie <- series do %>
-            <div style="cursor: pointer"
-                 phx-click="showseries"
-                 phx-value-agent="<%= node %>"
-                 phx-value-serie="<%= serie %>"
-               ><%= serie %></dev>
+            <%= live_redirect to: Routes.live_path(@socket, MetristWeb.NodeSeriesLive, node, serie) do %>
+              <div style="cursor: pointer"><%= serie %></div>
+            <% end %>
           <% end %>
         </td>
       </tr>
@@ -75,6 +47,7 @@ defmodule MetristWeb.DashboardLive do
       IO.puts("#{inspect socket}")
     end
     socket = socket
+    |> assign(:current_user, session["current_user"])
     |> assign(:owner_uuid, "Fetching...")
     |> assign(:account_uuid, "Fetching...")
     |> assign(:api_key, "Fetching...")
@@ -119,9 +92,8 @@ defmodule MetristWeb.DashboardLive do
 
   def handle_event("showseries", %{"agent" => agent, "serie" => serie}, socket) do
     socket = socket
-    |> assign(:show_serie, true)
-    |> assign(:agent, agent)
-    |> assign(:serie, serie)
+    |> push_redirect(to: MetristWeb.Router.Helpers.live_path(socket, MetristWeb.NodeSeriesLive,
+        agent, serie))
     {:noreply, socket}
   end
 

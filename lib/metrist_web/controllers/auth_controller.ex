@@ -30,7 +30,7 @@ defmodule MetristWeb.AuthController do
     |> put_flash(:info, "Successfully authenticated.")
     |> put_session(:current_user, user)
     |> configure_session(renew: true)
-    |> redirect(to: "/")
+    |> redirect(to: "/home")
   end
 
   alias Ueberauth.Auth
