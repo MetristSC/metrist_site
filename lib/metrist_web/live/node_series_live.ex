@@ -6,13 +6,13 @@ defmodule MetristWeb.NodeSeriesLive do
   @impl true
   def render(assigns) do
     ~L"""
+    <div>Metrics for <%= @series %></div>
+    <div class="grid grid-cols-2 gap-4 bg-blue-200">
     <%= for field <- @fields do %>
       <%= id = @series <> "." <> field
           live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field %>
     <% end %>
-    <br>
-    <%= inspect assigns %>
-    We should graph: <%= inspect Metrist.InfluxStore.fields_of(@series) %>
+    </div>
     """
   end
 

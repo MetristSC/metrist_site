@@ -37,7 +37,7 @@ defmodule MetristWeb.ChartComponent do
     # TODO move this to a push update style.
     data = Metrist.InfluxStore.values_for(assigns.series, assigns.field)
     ~L"""
-    <div class="">
+    <div class="bg-white m-2 rounded-2xl shadow-xl">
       <div id="chart-<%= @id %>" class="card">
         <div class="card-body">
           <div phx-hook="PhxChartComponent" id="chart-<%= @id %>--datasets" style="display:none;">
@@ -50,9 +50,9 @@ defmodule MetristWeb.ChartComponent do
               phx-update="ignore"
               data-label="<%= @field %>"
               data-metric="<%= "summary" %>"
-              data-title="<%= "#{@series}.#{@field}" %>"
+              data-title="<%= @field %>"
               data-tags="<%= "" %>"
-              data-unit="KB"
+              data-unit="B"
               data-prune-threshold="10000">
           </div>
         </div>
