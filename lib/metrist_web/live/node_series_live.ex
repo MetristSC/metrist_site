@@ -6,7 +6,7 @@ defmodule MetristWeb.NodeSeriesLive do
   @impl true
   def render(assigns) do
     ~L"""
-    <div>Metrics for <%= @series %></div>
+    <div class="pl-4 text-lg">Metrics for <%= @series %></div>
     <div class="grid grid-cols-2 gap-2">
     <%= for field <- @fields do %>
       <%= id = @series <> "." <> field
@@ -40,13 +40,15 @@ defmodule MetristWeb.NodeSeriesLive do
     assign(socket, :fields, fields)
   end
 
-  # TODO one day we need security checks here.
   @impl true
-  def mount(_params, session, socket) do
+  def mount(_params, session = %{"current_user" => _}, socket) do
     IO.puts("Session: #{inspect session}")
     IO.puts("Socket assigns: #{inspect socket.assigns}")
     socket = socket
     |> assign(:current_user, session["current_user"])
     {:ok, socket}
+  end
+  def mount(_params, _session, socket) do
+    {:ok, redirect(socket, to: "/")}
   end
 end

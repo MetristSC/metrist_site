@@ -38,7 +38,7 @@ defmodule MetristWeb.DashboardLive do
     """
   end
 
-  def mount(_params, session, socket) do
+  def mount(_params, session = %{"current_user" => _}, socket) do
     pid = self()
     if connected?(socket) do
       Task.async(fn -> poll_for_data(pid, session["current_user"]) end)
@@ -53,6 +53,9 @@ defmodule MetristWeb.DashboardLive do
     |> assign(:api_key, "Fetching...")
     |> assign(:nodes, MapSet.new())
     {:ok, socket}
+  end
+  def mount(_params, _session, socket) do
+    {:ok, redirect(socket, to: "/")}
   end
 
   def handle_info({:owner_uuid, owner_uuid}, socket) do

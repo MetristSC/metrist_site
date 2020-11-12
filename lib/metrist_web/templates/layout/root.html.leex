@@ -30,9 +30,10 @@
       <a href="/"><span id="logo-small">(m)</span> metri.st</a>
     </div>
       <%= if @current_user do %>
+        <div class="flex-none"><%= link "Home", to: "/home" %></div>
         <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
-          <div class="flex-grow">
-            <%= link "Live Dashboard", to: Routes.live_dashboard_path(@conn, :home),
+          <div class="flex-grow pl-4">
+            <%= link "Phoenix Dashboard", to: Routes.live_dashboard_path(@conn, :home),
                 class: "nav-link" %>
           </div>
         <% end %>
