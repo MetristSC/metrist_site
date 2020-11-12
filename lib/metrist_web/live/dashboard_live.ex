@@ -9,7 +9,7 @@ defmodule MetristWeb.DashboardLive do
     (Waiting for agents to register)
     <% else %>
     <table class="border border-gray-500">
-      <tr class="bg-blue-300">
+      <tr class="bg-indigo-300">
         <th>Agent</th>
         <th>Series</th>
       </tr>

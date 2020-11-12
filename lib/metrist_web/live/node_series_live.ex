@@ -7,7 +7,7 @@ defmodule MetristWeb.NodeSeriesLive do
   def render(assigns) do
     ~L"""
     <div>Metrics for <%= @series %></div>
-    <div class="grid grid-cols-2 gap-4 bg-blue-200">
+    <div class="grid grid-cols-2 gap-2">
     <%= for field <- @fields do %>
       <%= id = @series <> "." <> field
           live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field %>
