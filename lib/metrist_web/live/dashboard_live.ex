@@ -29,11 +29,7 @@ defmodule MetristWeb.DashboardLive do
     </table>
     <% end %>
     <div class="mt-2">
-    Owner UUID: <%= @owner_uuid %>
-    <br>
-    Account UUID: <%= @account_uuid %>
-    <br>
-    API Key: <%= @api_key %>
+    Your API key: <%= @api_key %>
     </div>
     """
   end

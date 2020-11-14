@@ -20,7 +20,10 @@ defmodule Metrist.InfluxStore do
   def series_of(account_uuid, agent_id) do
     query = "SHOW MEASUREMENTS WHERE account_uuid = '#{account_uuid}' AND agent_id = '#{agent_id}'"
     IO.puts("Querying: #{query}")
-    %{results: [%{series: [%{values: values}]}]} = query(query)
+    values = case query(query) do
+      %{results: [%{series: [%{values: values}]}]}  -> values
+      _ -> []
+    end
     List.flatten(values)
   end
 

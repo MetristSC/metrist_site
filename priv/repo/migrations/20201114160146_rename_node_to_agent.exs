@@ -3,5 +3,6 @@ defmodule Metrist.Repo.Migrations.RenameNodeToAgent do
 
   def change do
     rename table(:nodes), to: table(:agents)
+    rename table(:agents), :node_id, to: :agent_id
   end
 end
