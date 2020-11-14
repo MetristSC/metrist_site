@@ -16,8 +16,9 @@ defmodule Metrist.Node.PresenceSupervisor do
   Find the running process for the node or start a new one.
   """
   def find_or_start_child(account_uuid, node_id) do
-    case Registry.lookup(@registry, node_id) do
-      [{_pid, _}] ->
+    case Registry.lookup(@registry, {account_uuid, node_id}) do
+      [{pid, _}] ->
+        Logger.info("Presence server for #{node_id} is #{inspect pid}")
         make_name(account_uuid, node_id)
       [] ->
         start_child(account_uuid, node_id)
@@ -28,9 +29,9 @@ defmodule Metrist.Node.PresenceSupervisor do
   Return all processes for the account as a list of `{uuid, pid}` pairs.
   """
   def all_for(account_uuid) do
-    pattern = {:"$1", :"$2", :"$3"}
-    guards = [{:==, :"$3", account_uuid}]
-    body = [{{:"$1", :"$2"}}]
+    pattern = {{:"$1", :"$2"}, :"$3", :_}
+    guards = [{:==, :"$1", account_uuid}]
+    body = [{{:"$2", :"$3"}}]
     Registry.select(@registry,
       [{pattern, guards, body}]
     )
@@ -47,8 +48,10 @@ defmodule Metrist.Node.PresenceSupervisor do
 
     case DynamicSupervisor.start_child(__MODULE__, spec) do
       {:ok, _pid} ->
+        Logger.info("Started new presence server at #{inspect name}")
         name
       {:error, {:already_started, _pid}} ->
+        Logger.info("Presence server for #{inspect name} already exists")
         name
       {:error, reason} ->
         raise("Could not start child, reason: #{inspect(reason)}")
@@ -56,8 +59,7 @@ defmodule Metrist.Node.PresenceSupervisor do
   end
 
   defp make_name(account_uuid, node_id) do
-    # We register the account_uuid as a "value" so we can do
-    # things like "giev all agents for this account"
-    {:via, Registry, {@registry, node_id, account_uuid}}
+    # TODO maybe just use the Node's UUID?
+    {:via, Registry, {@registry, {account_uuid, node_id}}}
   end
 end

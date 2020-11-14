@@ -3,8 +3,6 @@
 defmodule MetristWeb.ChartComponent do
   use Phoenix.LiveComponent
 
-  @default_prune_threshold 1_000
-
   @impl true
   def mount(socket) do
     {:ok, socket, temporary_assigns: [data: []]}
@@ -37,78 +35,24 @@ defmodule MetristWeb.ChartComponent do
     # TODO move this to a push update style.
     data = Metrist.InfluxStore.values_for(assigns.series, assigns.field)
     ~L"""
-    <div class="bg-white m-2 p-2 rounded-2xl shadow-xl">
-      <div id="chart-<%= @id %>" class="card">
-        <div class="card-body">
-          <div phx-hook="PhxChartComponent" id="chart-<%= @id %>--datasets" style="display:none;">
-          <%= for [time, value] <- data do %>
-            <span data-x="<%= @field %>" data-y="<%= value %>" data-z="<%= time %>"></span>
-          <% end %>
-          </div>
-          <div class="chart"
-              id="chart-ignore-<%= @id %>"
-              phx-update="ignore"
-              data-label="<%= @field %>"
-              data-metric="<%= "summary" %>"
-              data-title="<%= @field %>"
-              data-tags="<%= "" %>"
-              data-unit="B"
-              data-prune-threshold="#{@default_prune_threshold}">
-          </div>
-        </div>
+    <div id="chart-<%= @id %>">
+      <div phx-hook="PhxChartComponent" id="chart-<%= @id %>--datasets" style="display:none;">
+      <%= for [time, value] <- data do %>
+        <span data-x="<%= @field %>" data-y="<%= value %>" data-z="<%= time %>"></span>
+      <% end %>
+      </div>
+      <div class="chart"
+          id="chart-ignore-<%= @id %>"
+          phx-update="ignore"
+          data-label="<%= @field %>"
+          data-metric="<%= "summary" %>"
+          data-title="<%= @field %>"
+          data-tags="<%= "" %>"
+          data-unit="B"
+          data-prune-threshold="1000">
       </div>
     </div>
     """
-  end
-
-  defp chart_title(metric) do
-    "#{Enum.join(metric.name, ".")}#{chart_tags(metric.tags)}"
-  end
-
-  defp chart_tags([]), do: ""
-  defp chart_tags(tags), do: " (#{Enum.join(tags, "-")})"
-
-  defp chart_kind(Telemetry.Metrics.Counter), do: :counter
-  defp chart_kind(Telemetry.Metrics.LastValue), do: :last_value
-  defp chart_kind(Telemetry.Metrics.Sum), do: :sum
-  defp chart_kind(Telemetry.Metrics.Summary), do: :summary
-
-  defp chart_kind(Telemetry.Metrics.Distribution),
-    do: raise(ArgumentError, "LiveDashboard does not yet support distribution metrics")
-
-  defp chart_label(%{} = metric) do
-    metric.name
-    |> List.last()
-    |> Phoenix.Naming.humanize()
-  end
-
-  defp chart_unit(:byte), do: "bytes"
-  defp chart_unit(:kilobyte), do: "KB"
-  defp chart_unit(:megabyte), do: "MB"
-  defp chart_unit(:nanosecond), do: "ns"
-  defp chart_unit(:microsecond), do: "µs"
-  defp chart_unit(:millisecond), do: "ms"
-  defp chart_unit(:second), do: "s"
-  defp chart_unit(:unit), do: ""
-  defp chart_unit(unit) when is_atom(unit), do: unit
-
-  defp prune_threshold(metric) do
-    prune_threshold =
-      metric.reporter_options[:prune_threshold]
-      |> validate_prune_threshold()
-
-    to_string(prune_threshold || @default_prune_threshold)
-  end
-
-  defp validate_prune_threshold(nil), do: nil
-
-  defp validate_prune_threshold(value) do
-    unless is_integer(value) and value > 0 do
-      raise ArgumentError,
-            "expected :prune_threshold to be a positive integer, got: #{inspect(value)}"
-    end
-
-    value
   end
 end
 

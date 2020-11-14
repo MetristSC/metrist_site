@@ -15,6 +15,7 @@ defmodule Metrist.Node.Presence do
   """
   use GenServer, restart: :transient
   require Logger
+  alias Metrist.Node.Command
 
 if Mix.env == :dev do
   @alive_timeout 30_000
@@ -25,7 +26,7 @@ else
 end
 
   defmodule State do
-    defstruct [:account_uuid, :node_id, :state, :timer_ref]
+    defstruct [:account_uuid, :node_id, :node_uuid, :state, :timer_ref]
   end
 
 
@@ -37,22 +38,35 @@ end
   Register a received ping. Starts a server if needed.
   """
   def ping_received(account_uuid, node_id) do
-    Logger.info("Processing ping for #{account_uuid}/#{node_id}")
+    # TODO not sure this is the perfect spot...
+    if not exists?(account_uuid, node_id) do
+      c = %Command.Create{
+        uuid: Id.generate(),
+        account_uuid: account_uuid,
+        node_id: node_id}
+      Logger.info("Node does not exist, dispatching command #{inspect c}")
+      Metrist.App.dispatch(c)
+    end
+
     server = Metrist.Node.PresenceSupervisor.find_or_start_child(account_uuid, node_id)
-    GenServer.cast(server, :ping_received)
+    Logger.info("Processing ping for #{account_uuid}/#{node_id} to #{inspect server}")
+    result = GenServer.cast(server, :ping_received)
+    Logger.info("Ping result: #{inspect result}")
+    result
   end
 
   @doc """
-  Subscribe to all presence messages for the given account.
+  Subscribe to all _node_ presence messages for the given account.
   """
   def subscribe(account_uuid) do
-    Phoenix.PubSub.subscribe(Metrist.PubSub, topic_for(account_uuid))
+    Metrist.PubSub.subscribe("nodes", account_uuid)
   end
 
   # Server side
 
   @impl true
   def init([account_uuid, node_id]) do
+    Logger.info("Initializing presence server at #{inspect self()} for #{account_uuid},#{node_id}")
     state = %State{account_uuid: account_uuid,
                    node_id: node_id,
                    state: :new}
@@ -63,9 +77,11 @@ end
 
   @impl true
   def handle_cast(:ping_received, state) do
+    Logger.info("Server processing ping for #{inspect state}")
     if state.state != :alive do
       broadcast_state_change(state, :alive)
     end
+    dispatch_handle_ping_command(state)
     state = schedule_timeout(state, :alive)
     {:noreply, state}
   end
@@ -92,16 +108,31 @@ end
   end
 
   defp broadcast_state_change(state, new_state) do
-    topic = topic_for(state.account_uuid)
     message = {:node_state_change, %{account_uuid: state.account_uuid,
                               node_id: state.node_id,
                               to_state: new_state}}
-    Logger.debug("#{inspect self} broadcast on #{inspect topic} from state #{state.state}: #{inspect message}")
-    Phoenix.PubSub.broadcast(Metrist.PubSub, topic, message)
+    Logger.debug("#{inspect self()} broadcast on #{inspect state.account_uuid} from state #{state.state}: #{inspect message}")
+    Metrist.PubSub.broadcast("nodes", state.account_uuid, message)
   end
 
   defp timeout_for(:alive), do: @alive_timeout
   defp timeout_for(:dormant), do: @dormant_timeout
 
-  defp topic_for(account_uuid), do: "nodes:#{account_uuid}"
+  defp exists?(account_uuid, node_id) do
+    Metrist.Node.Projection.by_account_and_node_id(account_uuid, node_id)
+    |> Metrist.Repo.exists?()
+  end
+
+  defp dispatch_handle_ping_command(state) do
+    node = Metrist.Node.Projection.by_account_and_node_id(state.account_uuid, state.node_id)
+    |> Metrist.Repo.one()
+    if node do
+      c = %Command.HandlePing{uuid: node.uuid}
+      Logger.debug("Dispatching command #{inspect c}")
+      Metrist.App.dispatch(c)
+    else
+      # and if not? We'll wait until registration is complete and do it the next round.
+      Logger.debug("Node not registered yet, skipping ping command")
+    end
+  end
 end

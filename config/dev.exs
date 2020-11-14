@@ -45,7 +45,7 @@ config :metrist, MetristWeb.Endpoint,
     ]
   ]
 
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console, format: "[$level] $message\n", level: :info
 
 config :phoenix, :stacktrace_depth, 20
 

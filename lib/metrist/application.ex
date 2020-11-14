@@ -8,7 +8,7 @@ defmodule Metrist.Application do
       Metrist.App,
       Metrist.Repo,
       MetristWeb.Telemetry,
-      {Phoenix.PubSub, name: Metrist.PubSub},
+      Metrist.PubSub,
       MetristWeb.Endpoint,
       Metrist.User.Projector,
       Metrist.User.RegistrationProcessManager,

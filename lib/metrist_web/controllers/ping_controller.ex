@@ -36,10 +36,15 @@ defmodule MetristWeb.PingController do
     :ok
   end
 
-  defp handle_payload(_acct, _node_id, nil), do: :ok
-  defp handle_payload(acct, node_id, payload) do
-    Metrist.InfluxStore.write_from_agent(acct, node_id, payload)
+  defp handle_payload(_account_uuid, _node_id, nil), do: :ok
+  defp handle_payload(account_uuid, node_id, payload) do
+    node = Metrist.Node.Projection.by_account_and_node_id(account_uuid, node_id)
+    |> Metrist.Repo.one()
+    Logger.info("Node is: #{inspect node}")
+    if node do
+      Logger.info("We have a node uuid, can broadcast and write")
+      Metrist.PubSub.broadcast("agent", node.uuid, {:metrics_received, payload})
+      Metrist.InfluxStore.write_from_agent(account_uuid, node.node_id, payload)
+    end
   end
-
-
 end

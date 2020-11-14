@@ -16,6 +16,7 @@ defmodule Metrist.Node do
     field :uuid, String.t(), enforce: true
     field :account_uuid, String.t(), enforce: true
     field :node_id, String.t(), enforce: true
+    field :last_ping_us, integer()
   end
 
   # Command handlers
@@ -29,9 +30,9 @@ defmodule Metrist.Node do
     nil
   end
 
-  def execute(_node = %__MODULE__{}, c = %Command.HandlePing{}) do
-    Logger.info("Ping command #{inspect c}, now what?")
-    nil
+  def execute(node = %__MODULE__{}, c = %Command.HandlePing{}) do
+    %Event.PingReceived{uuid: node.uuid,
+                        time_us: :erlang.system_time(:microsecond)}
   end
 
   # Event handlers
@@ -41,5 +42,10 @@ defmodule Metrist.Node do
                 uuid: e.uuid,
                 account_uuid: e.account_uuid,
                 node_id: e.node_id}
+  end
+
+  def apply(node, e = %Event.PingReceived{}) do
+    %__MODULE__{node |
+                last_ping_us: e.time_us}
   end
 end
