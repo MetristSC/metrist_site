@@ -1,4 +1,4 @@
-defmodule MetristWeb.NodeSeriesLive do
+defmodule MetristWeb.AgentSeriesLive do
   use Phoenix.LiveView
 
   @moduledoc """
@@ -42,7 +42,7 @@ defmodule MetristWeb.NodeSeriesLive do
     fields = Metrist.InfluxStore.fields_of(params["series"])
     fields = Enum.map(fields, fn [field_name, _type] -> field_name end)
     # TODO move this out of the _web app
-    agent = Metrist.Node.Projection.by_account_and_node_id(params["account_uuid"], params["agent_name"])
+    agent = Metrist.Agent.Projection.by_account_and_agent_id(params["account_uuid"], params["agent_name"])
     |> Metrist.Repo.one!()
     socket = socket
     |> assign(:agent_name, params["agent_name"])

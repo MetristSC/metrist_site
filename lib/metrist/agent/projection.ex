@@ -1,21 +1,21 @@
-defmodule Metrist.Node.Projection do
+defmodule Metrist.Agent.Projection do
   @moduledoc """
-  Read projection for nodes.
+  Read projection for agents.
   """
   use Ecto.Schema
   import Ecto.Query
 
   @primary_key {:uuid, :binary_id, autogenerate: false}
 
-  schema "nodes" do
+  schema "agents" do
     field :account_uuid, :binary_id
-    field :node_id, :string
+    field :agent_id, :string
   end
 
-  def by_account_and_node_id(account_uuid, node_id) do
+  def by_account_and_agent_id(account_uuid, agent_id) do
     from(n in __MODULE__,
       where: n.account_uuid == ^account_uuid
-         and n.node_id == ^node_id)
+         and n.agent_id == ^agent_id)
   end
 
   def by_uuid(uuid) do

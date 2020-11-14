@@ -1,6 +1,6 @@
-defmodule Metrist.Node.Event.Created do
+defmodule Metrist.Agent.Event.Created do
   @moduledoc """
-  Emitted when a node newly appears.
+  Emitted when a agent newly appears.
   """
   use TypedStruct
 
@@ -8,13 +8,13 @@ defmodule Metrist.Node.Event.Created do
   typedstruct do
     field :uuid, String.t(), enforce: true
     field :account_uuid, String.t(), enforce: true
-    field :node_id, String.t(), enforce: true
+    field :agent_id, String.t(), enforce: true
   end
 end
 
-defmodule Metrist.Node.Event.PingReceived do
+defmodule Metrist.Agent.Event.PingReceived do
   @moduledoc """
-  Emitted when a node sends a ping.
+  Emitted when a agent sends a ping.
   """
   use TypedStruct
 

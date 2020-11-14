@@ -29,22 +29,22 @@ defmodule MetristWeb.PingController do
   end
   def verify_request(acct, _payload, params) do
     account_uuid = acct.account_uuid
-    node_id = params["node_id"]
+    agent_id = params["agent_id"]
 
-    Metrist.Node.Presence.ping_received(account_uuid, node_id)
-    handle_payload(account_uuid, node_id, params["payload"])
+    Metrist.Agent.Presence.ping_received(account_uuid, agent_id)
+    handle_payload(account_uuid, agent_id, params["payload"])
     :ok
   end
 
-  defp handle_payload(_account_uuid, _node_id, nil), do: :ok
-  defp handle_payload(account_uuid, node_id, payload) do
-    node = Metrist.Node.Projection.by_account_and_node_id(account_uuid, node_id)
+  defp handle_payload(_account_uuid, _agent_id, nil), do: :ok
+  defp handle_payload(account_uuid, agent_id, payload) do
+    agent = Metrist.Agent.Projection.by_account_and_agent_id(account_uuid, agent_id)
     |> Metrist.Repo.one()
-    Logger.info("Node is: #{inspect node}")
-    if node do
-      Logger.info("We have a node uuid, can broadcast and write")
-      Metrist.PubSub.broadcast("agent", node.uuid, {:metrics_received, payload})
-      Metrist.InfluxStore.write_from_agent(account_uuid, node.node_id, payload)
+    Logger.info("Agent is: #{inspect agent}")
+    if agent do
+      Logger.info("We have a agent uuid, can broadcast and write")
+      Metrist.PubSub.broadcast("agent", agent.uuid, {:metrics_received, payload})
+      Metrist.InfluxStore.write_from_agent(account_uuid, agent.agent_id, payload)
     end
   end
 end

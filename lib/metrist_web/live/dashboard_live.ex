@@ -5,7 +5,7 @@ defmodule MetristWeb.DashboardLive do
 
   def render(assigns) do
     ~L"""
-    <%= if is_nil(@nodes) or MapSet.size(@nodes) == 0 do %>
+    <%= if is_nil(@agents) or MapSet.size(@agents) == 0 do %>
     (Waiting for agents to register)
     <% else %>
     <table class="border border-gray-500">
@@ -13,13 +13,13 @@ defmodule MetristWeb.DashboardLive do
         <th>Agent</th>
         <th>Series</th>
       </tr>
-      <%= for node <- @nodes do %>
+      <%= for agent <- @agents do %>
       <tr>
-        <td class="border p-2"><%= node %></td>
+        <td class="border p-2"><%= agent %></td>
         <td class="border p-2">
-          <% series = Metrist.InfluxStore.series_of(@account_uuid, node) %>
+          <% series = Metrist.InfluxStore.series_of(@account_uuid, agent) %>
           <%= for serie <- series do %>
-            <%= live_redirect to: Routes.live_path(@socket, MetristWeb.NodeSeriesLive, node, serie) do %>
+            <%= live_redirect to: Routes.live_path(@socket, MetristWeb.AgentSeriesLive, agent, serie) do %>
               <div style="cursor: pointer"><%= serie %></div>
             <% end %>
           <% end %>
@@ -51,7 +51,7 @@ defmodule MetristWeb.DashboardLive do
     |> assign(:owner_uuid, "Fetching...")
     |> assign(:account_uuid, "Fetching...")
     |> assign(:api_key, "Fetching...")
-    |> assign(:nodes, MapSet.new())
+    |> assign(:agents, MapSet.new())
     {:ok, socket}
   end
   def mount(_params, _session, socket) do
@@ -63,28 +63,28 @@ defmodule MetristWeb.DashboardLive do
   end
 
   def handle_info({:account_uuid, account_uuid}, socket) do
-    nodes = account_uuid
-    |> Metrist.Node.PresenceSupervisor.all_for()
-    |> Enum.map(fn {node, _pid} -> node end)
+    agents = account_uuid
+    |> Metrist.Agent.PresenceSupervisor.all_for()
+    |> Enum.map(fn {agent, _pid} -> agent end)
     |> MapSet.new()
-    Metrist.Node.Presence.subscribe(account_uuid)
+    Metrist.Agent.Presence.subscribe(account_uuid)
     socket = socket
     |> assign(:account_uuid, account_uuid)
-    |> assign(:nodes, nodes)
+    |> assign(:agents, agents)
     {:noreply, socket}
   end
 
   def handle_info({:api_key, api_key}, socket) do
     {:noreply, assign(socket, :api_key, api_key)}
   end
-  def handle_info({:node_state_change, node_data}, socket) do
-    current_nodes = socket.assigns.nodes
-    current_nodes = if node_data.to_state == :inactive do
-      MapSet.delete(current_nodes, node_data.node_id)
+  def handle_info({:agent_state_change, agent_data}, socket) do
+    current_agents = socket.assigns.agents
+    current_agents = if agent_data.to_state == :inactive do
+      MapSet.delete(current_agents, agent_data.agent_id)
     else
-      MapSet.put(current_nodes, node_data.node_id)
+      MapSet.put(current_agents, agent_data.agent_id)
     end
-    {:noreply, assign(socket, :nodes, current_nodes)}
+    {:noreply, assign(socket, :agents, current_agents)}
   end
 
   def handle_info(msg, socket) do
@@ -95,7 +95,7 @@ defmodule MetristWeb.DashboardLive do
 
   def handle_event("showseries", %{"agent" => agent, "serie" => serie}, socket) do
     socket = socket
-    |> push_redirect(to: MetristWeb.Router.Helpers.live_path(socket, MetristWeb.NodeSeriesLive,
+    |> push_redirect(to: MetristWeb.Router.Helpers.live_path(socket, MetristWeb.AgentSeriesLive,
         agent, serie))
     {:noreply, socket}
   end

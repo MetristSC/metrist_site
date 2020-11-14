@@ -1,6 +1,6 @@
-defmodule Metrist.Node.Command.Create do
+defmodule Metrist.Agent.Command.Create do
   @moduledoc """
-  Register a new node.
+  Register a new agent.
   """
   use TypedStruct
 
@@ -8,11 +8,11 @@ defmodule Metrist.Node.Command.Create do
   typedstruct do
     field :uuid, String.t(), enforce: true
     field :account_uuid, String.t(), enforce: true
-    field :node_id, String.t(), enforce: true
+    field :agent_id, String.t(), enforce: true
   end
 end
 
-defmodule Metrist.Node.Command.HandlePing do
+defmodule Metrist.Agent.Command.HandlePing do
   @moduledoc """
   Handle a received ping.
   """

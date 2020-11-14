@@ -1,4 +1,4 @@
-defmodule Metrist.Node.PresenceSupervisor do
+defmodule Metrist.Agent.PresenceSupervisor do
   @moduledoc """
   Supervisor for presence monitoring processes.
   """
@@ -13,15 +13,15 @@ defmodule Metrist.Node.PresenceSupervisor do
   end
 
   @doc """
-  Find the running process for the node or start a new one.
+  Find the running process for the agent or start a new one.
   """
-  def find_or_start_child(account_uuid, node_id) do
-    case Registry.lookup(@registry, {account_uuid, node_id}) do
+  def find_or_start_child(account_uuid, agent_id) do
+    case Registry.lookup(@registry, {account_uuid, agent_id}) do
       [{pid, _}] ->
-        Logger.info("Presence server for #{node_id} is #{inspect pid}")
-        make_name(account_uuid, node_id)
+        Logger.info("Presence server for #{agent_id} is #{inspect pid}")
+        make_name(account_uuid, agent_id)
       [] ->
-        start_child(account_uuid, node_id)
+        start_child(account_uuid, agent_id)
     end
   end
 
@@ -42,9 +42,9 @@ defmodule Metrist.Node.PresenceSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  defp start_child(account_uuid, node_id) do
-    name = make_name(account_uuid, node_id)
-    spec = {Metrist.Node.Presence, [account_uuid, node_id, name]}
+  defp start_child(account_uuid, agent_id) do
+    name = make_name(account_uuid, agent_id)
+    spec = {Metrist.Agent.Presence, [account_uuid, agent_id, name]}
 
     case DynamicSupervisor.start_child(__MODULE__, spec) do
       {:ok, _pid} ->
@@ -58,8 +58,8 @@ defmodule Metrist.Node.PresenceSupervisor do
     end
   end
 
-  defp make_name(account_uuid, node_id) do
-    # TODO maybe just use the Node's UUID?
-    {:via, Registry, {@registry, {account_uuid, node_id}}}
+  defp make_name(account_uuid, agent_id) do
+    # TODO maybe just use the Agent's UUID?
+    {:via, Registry, {@registry, {account_uuid, agent_id}}}
   end
 end

@@ -24,9 +24,9 @@ defmodule MetristWeb.Router do
 
     get "/", PageController, :index
     live "/home", DashboardLive
-    live "/series/:agent/:series", NodeSeriesLive
+    live "/series/:agent/:series", AgentSeriesLive
     # Work-around for having slashes in names... TODO new naming scheme
-    live "/series/:agent_name/:account_uuid/:agent_name/:series_name", NodeSeriesLive
+    live "/series/:agent_name/:account_uuid/:agent_name/:series_name", AgentSeriesLive
   end
 
   scope "/auth", MetristWeb do

@@ -14,8 +14,8 @@ defmodule Metrist.Application do
       Metrist.User.RegistrationProcessManager,
       Metrist.Account.Projector.ByOwner,
       Metrist.Account.Projector.ByApiKey,
-      Metrist.Node.Projector,
-      Metrist.Node.PresenceSupervisor,
+      Metrist.Agent.Projector,
+      Metrist.Agent.PresenceSupervisor,
       Metrist.InfluxStore
     ]
 
