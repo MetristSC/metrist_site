@@ -48,10 +48,8 @@ defmodule Metrist.Agent.PresenceSupervisor do
 
     case DynamicSupervisor.start_child(__MODULE__, spec) do
       {:ok, _pid} ->
-        Logger.info("Started new presence server at #{inspect name}")
         name
       {:error, {:already_started, _pid}} ->
-        Logger.info("Presence server for #{inspect name} already exists")
         name
       {:error, reason} ->
         raise("Could not start child, reason: #{inspect(reason)}")

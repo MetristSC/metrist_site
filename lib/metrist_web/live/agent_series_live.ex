@@ -1,5 +1,6 @@
 defmodule MetristWeb.AgentSeriesLive do
   use Phoenix.LiveView
+  require Logger
 
   @moduledoc """
   Render a set of metrics on a dashboard.
@@ -23,7 +24,7 @@ defmodule MetristWeb.AgentSeriesLive do
   end
 
   # See the router. Because of the slashes in the full series name, we can expect either
-  # variant.
+  # variant. Handle both for now, but TODO is maybe reconsider using slashes as separators.
   @impl true
   def handle_params(params = %{"agent_name" => _}, _uri, socket) do
     params
@@ -31,14 +32,14 @@ defmodule MetristWeb.AgentSeriesLive do
     |> do_handle_params(socket)
   end
   def handle_params(params = %{"agent" => _}, _uri, socket) do
-    [account_uuid, agent_name, _] = String.split(params["series"], "/")
+    [account_uuid, agent_name, series_name] = String.split(params["series"], "/")
     params
     |> Map.put("agent_name", agent_name)
     |> Map.put("account_uuid", account_uuid)
+    |> Map.put("series_name", series_name)
     |> do_handle_params(socket)
   end
   defp do_handle_params(params, socket) do
-    IO.puts("Do handle Params: #{inspect params}")
     fields = Metrist.InfluxStore.fields_of(params["series"])
     fields = Enum.map(fields, fn [field_name, _type] -> field_name end)
     # TODO move this out of the _web app
@@ -49,6 +50,7 @@ defmodule MetristWeb.AgentSeriesLive do
     |> assign(:agent_uuid, agent.uuid)
     |> assign(:account_uuid, params["account_uuid"])
     |> assign(:series, params["series"])
+    |> assign(:series_name, params["series_name"])
     |> assign(:fields, fields)
     Metrist.PubSub.subscribe("agent", agent.uuid)
     {:noreply, socket}
@@ -56,8 +58,6 @@ defmodule MetristWeb.AgentSeriesLive do
 
   @impl true
   def mount(_params, session = %{"current_user" => _}, socket) do
-    IO.puts("Session: #{inspect session}")
-    IO.puts("Socket assigns: #{inspect socket.assigns}")
     socket = socket
     |> assign(:current_user, session["current_user"])
     {:ok, socket}
@@ -67,8 +67,23 @@ defmodule MetristWeb.AgentSeriesLive do
   end
 
   @impl true
-  def handle_info(msg, socket) do
-    IO.puts("Received unhandled message: #{inspect msg}")
+  def handle_info({:metrics_received, metrics}, socket) do
+    metrics
+    |> Map.get(socket.assigns.series_name)
+    |> handle_fields_and_values(socket)
     {:noreply, socket}
+  end
+  def handle_info(msg, socket) do
+    Logger.error("Received unhandled message: #{inspect msg}")
+    {:noreply, socket}
+  end
+
+  defp handle_fields_and_values(nil, socket), do: socket
+  defp handle_fields_and_values([ts, fv_map, _tags], socket) do
+    Logger.info("We should send #{inspect fv_map} to our components!")
+    for {field, value} <- fv_map do
+      id = "#{socket.assigns.series}.#{field}"
+      send_update(MetristWeb.ChartComponent, id: id, data: [[ts, value]])
+    end
   end
 end
