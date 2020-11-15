@@ -447,6 +447,7 @@ export class TelemetryChart {
 
 const PhxChartComponent = {
   mounted() {
+    console.log("==== MOUNTED ====", this)
     let chartEl = this.el.parentElement.querySelector('.chart')
     let size = chartEl.getBoundingClientRect()
     let options = Object.assign({}, chartEl.dataset, {
@@ -463,10 +464,9 @@ const PhxChartComponent = {
       let newSize = chartEl.getBoundingClientRect()
       this.chart.resize(newSize)
     }))
-
-    this.updated() // TODO remove me once we update with history, etc.
   },
   updated() {
+    console.log("==== UPDATED ====", this)
     const data = Array
       .from(this.el.children || [])
       .map(({ dataset: { x, y, z } }) => {
@@ -475,11 +475,13 @@ const PhxChartComponent = {
         return { x, y: +y, z: +z / 1e6 }
       })
 
+    console.log("Data is", data)
     if (data.length > 0) {
       this.chart.pushData(data)
     }
   },
   destroyed() {
+    console.log("==== DESTROYED ====", this)
     this.chart.clearTimers()
   }
 }

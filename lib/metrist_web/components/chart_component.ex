@@ -4,6 +4,7 @@ defmodule MetristWeb.ChartComponent do
 
   @impl true
   def preload(list_of_assigns) do
+    # A potential optimization here is to load everything with one call to InfluxDB
     Logger.debug("Chart preload(#{inspect list_of_assigns}")
     list_of_assigns
   end
@@ -12,7 +13,7 @@ defmodule MetristWeb.ChartComponent do
   def mount(socket) do
     # TODO We can optimize here to get all the data in one call from InfluxDB
     Logger.info("Chart mount(#{inspect socket}")
-    {:ok, socket}
+    {:ok, socket, temporary_assigns: [data: []]}
   end
 
   @impl true
@@ -21,12 +22,11 @@ defmodule MetristWeb.ChartComponent do
     {series, assigns} = Map.pop(assigns, :series)
     socket = if series do
       # Initial call
-      data = Metrist.InfluxStore.values_for(series, assigns.field)
       assign(socket,
         series: series,
         field: assigns.field,
         id: assigns.id,
-        data: data)
+        data: [])
     else
       # Data update call
       assign(socket, data: assigns.data)
