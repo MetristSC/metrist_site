@@ -4,6 +4,8 @@ defmodule Metrist.Application do
   use Application
 
   def start(_type, _args) do
+    Metrist.InfluxStore.initialize()
+
     children = [
       Metrist.App,
       Metrist.Repo,

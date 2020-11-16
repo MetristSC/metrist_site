@@ -14,13 +14,13 @@ defmodule MetristWeb.AgentSeriesLive do
   def render(assigns) do
     ~L"""
     <div class="pl-4 text-lg">Metrics for <%= @series %>.
-      Agent is <%= if @alive?, do: "alive", else: "dead" %></div>
+      <%= render_button(@alive?, @streaming?, assigns) %></div>
     <div class="grid grid-cols-2 gap-2">
     <%= for field <- @fields do %>
       <div class="bg-white m-2 p-2 rounded-2xl shadow-xl">
         <%= id = @series <> "." <> field
             live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field,
-              alive?: @alive? %>
+              alive?: @alive?, account_uuid: @account_uuid, agent_name: @agent_name %>
       </div>
     <% end %>
     </div>
@@ -47,6 +47,7 @@ defmodule MetristWeb.AgentSeriesLive do
     |> assign(:series_name, params["series_name"])
     |> assign(:fields, fields)
     |> assign(:alive?, Metrist.Agent.Presence.alive?(params["account_uuid"], params["agent_name"]))
+    |> assign(:streaming?, false)
     for field <- fields do
       id = "#{socket.assigns.series}.#{field}"
       send_update(MetristWeb.ChartComponent, id: id,
@@ -67,6 +68,12 @@ defmodule MetristWeb.AgentSeriesLive do
   end
 
   @impl true
+  def terminate(_reason, socket) do
+    Metrist.Agent.Presence.stop_streaming(socket.assigns.account_uuid, socket.assigns.agent_name)
+    :ok
+  end
+
+  @impl true
   def handle_info({:metrics_received, metrics}, socket) do
     metrics
     |> Map.get(socket.assigns.series_name)
@@ -78,16 +85,35 @@ defmodule MetristWeb.AgentSeriesLive do
     socket = if agent_id == socket.assigns.agent_name do
       is_alive = Map.get(info, :to_state) == :alive
       socket = assign(socket, :alive?, is_alive)
-      # TODO update chart children
+      for field <- socket.assigns.fields do
+        id = socket.assigns.series <> "." <> field
+        send_update(MetristWeb.ChartComponent, id: id, alive?: is_alive)
+      end
       socket
     else
       socket
     end
     {:noreply, socket}
   end
-
   def handle_info(msg, socket) do
     Logger.error("Received unhandled message: #{inspect msg}")
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("start-streaming", _value, socket) do
+    Metrist.Agent.Presence.start_streaming(socket.assigns.account_uuid, socket.assigns.agent_name)
+    socket = assign(socket, :streaming?, true)
+    {:noreply, socket}
+  end
+  @impl true
+  def handle_event("stop-streaming", _value, socket) do
+    Metrist.Agent.Presence.stop_streaming(socket.assigns.account_uuid, socket.assigns.agent_name)
+    socket = assign(socket, :streaming?, false)
+    {:noreply, socket}
+  end
+  def handle_event(event, value, socket) do
+    IO.puts("HANDLE ME: #{inspect event}, #{inspect value}")
     {:noreply, socket}
   end
 
@@ -99,4 +125,15 @@ defmodule MetristWeb.AgentSeriesLive do
       send_update(MetristWeb.ChartComponent, id: id, data: [[ts, value]])
     end
   end
+
+  def render_button(_alive = true, _streaming = false, assigns) do
+    ~L(<button phx-click="start-streaming">Start streaming</button>)
+  end
+  def render_button(_alive = true, _streaming = true, assigns) do
+    ~L(<button phx-click="stop-streaming">Stop streaming</button>)
+  end
+  def render_button(_alive = false, _streaming, _assigns) do
+    "(agent is not alive)"
+  end
+
 end

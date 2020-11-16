@@ -8,6 +8,7 @@ defmodule MetristWeb.PingController do
   def index(conn, params) do
     case verify_request(params) do
       :ok -> text(conn, "pong")
+      :stream -> text(conn, "stream")
       error  -> text(conn, error)
     end
   end
@@ -22,7 +23,6 @@ defmodule MetristWeb.PingController do
     Logger.info("Invalid request #{inspect params}")
     :invalid_request
   end
-
   def verify_request(nil, _payload, params) do
     Logger.info("Unknown API key/account #{inspect params}")
     :unkown_key
@@ -31,19 +31,20 @@ defmodule MetristWeb.PingController do
     account_uuid = acct.account_uuid
     agent_id = params["agent_id"]
 
-    Metrist.Agent.Presence.ping_received(account_uuid, agent_id)
     handle_payload(account_uuid, agent_id, params["payload"])
-    :ok
+    Metrist.Agent.Presence.ping_received(account_uuid, agent_id)
   end
 
   defp handle_payload(_account_uuid, _agent_id, nil), do: :ok
   defp handle_payload(account_uuid, agent_id, payload) do
     agent = Metrist.Agent.Projection.by_account_and_agent_id(account_uuid, agent_id)
     |> Metrist.Repo.one()
-    payload = internalize_timestamps(payload)
     if agent do
+      payload = internalize_timestamps(payload)
       Metrist.PubSub.broadcast("agent", agent.uuid, {:metrics_received, payload})
       Metrist.InfluxStore.write_from_agent(account_uuid, agent.agent_id, payload)
+    else
+      :ok # We're probably setting up things for a new agent...
     end
   end
 

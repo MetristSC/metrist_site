@@ -21,12 +21,12 @@ if Mix.env == :dev do
   @alive_timeout 30_000
   @dormant_timeout 60_000
 else
-  @alive_timeout 60_000
+  @alive_timeout 3600_000
   @dormant_timeout 86_400_000
 end
 
   defmodule State do
-    defstruct [:account_uuid, :agent_id, :agent_uuid, :state, :timer_ref]
+    defstruct [:account_uuid, :agent_id, :agent_uuid, :state, :timer_ref, :stream_to]
   end
 
   def start_link([account_uuid, agent_id, name]) do
@@ -34,7 +34,8 @@ end
   end
 
   @doc """
-  Register a received ping. Starts a server if needed.
+  Register a received ping. Starts a server if needed. Returns either `:ok` or
+  a tuple `:stream` if the agent should be streaming.
   """
   def ping_received(account_uuid, agent_id) do
     # TODO not sure this is the perfect spot...
@@ -47,8 +48,7 @@ end
     end
 
     server = Metrist.Agent.PresenceSupervisor.find_or_start_child(account_uuid, agent_id)
-    result = GenServer.cast(server, :ping_received)
-    result
+    GenServer.call(server, :ping_received)
   end
 
   @doc """
@@ -68,31 +68,59 @@ end
     end
   end
 
+  @doc """
+  Tell an agent to start streaming data. Target process for the data is always `self()`.
+  """
+  def start_streaming(account_uuid, agent_id) do
+    case Metrist.Agent.PresenceSupervisor.find_child(account_uuid, agent_id) do
+      nil -> false
+      pid -> GenServer.cast(pid, {:start_streaming, self()})
+    end
+  end
+
+  @doc """
+  Tell an agent to stop streaming data to the calling process.
+  """
+  def stop_streaming(account_uuid, agent_id) do
+    case Metrist.Agent.PresenceSupervisor.find_child(account_uuid, agent_id) do
+      nil -> false
+      pid -> GenServer.cast(pid, {:stop_streaming, self()})
+    end
+  end
+
   # Server side
 
   @impl true
   def init([account_uuid, agent_id]) do
     state = %State{account_uuid: account_uuid,
                    agent_id: agent_id,
-                   state: :new}
+                   state: :new,
+                   stream_to: MapSet.new()}
     broadcast_state_change(state, :alive)
     state = schedule_timeout(state, :alive)
     {:ok, state}
   end
 
   @impl true
-  def handle_call(:alive?, _from, state) do
-    {:reply, state.state == :alive, state}
-  end
-
-  @impl true
-  def handle_cast(:ping_received, state) do
+  def handle_call(:ping_received, _from, state) do
     if state.state != :alive do
       broadcast_state_change(state, :alive)
     end
     dispatch_handle_ping_command(state)
     state = schedule_timeout(state, :alive)
-    {:noreply, state}
+    reply = if MapSet.size(state.stream_to) > 0, do: :stream, else: :ok
+    {:reply, reply, state}
+  end
+  def handle_call(:alive?, _from, state) do
+    {:reply, state.state == :alive, state}
+  end
+
+  @impl true
+  def handle_cast({:start_streaming, dest}, state) do
+    {:noreply, %State{state | stream_to: MapSet.put(state.stream_to, dest)}}
+  end
+  def handle_cast({:stop_streaming, dest}, state) do
+    {:noreply, %State{state | stream_to: MapSet.delete(state.stream_to, dest)}}
   end
 
   @impl true

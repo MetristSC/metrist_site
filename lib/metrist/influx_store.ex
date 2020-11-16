@@ -2,7 +2,20 @@ defmodule Metrist.InfluxStore do
   use Instream.Connection,
     otp_app: :metrist
 
+  @min_secs_between_writes 60
+
+  def initialize() do
+    :ets.new(__MODULE__, [:public, :set, :named_table])
+  end
+
   def write_from_agent(account_uuid, agent_id, payload) do
+    needs_throttle = check_throttle(account_uuid, agent_id)
+    do_write_from_agent(account_uuid, agent_id, payload, needs_throttle)
+  end
+  defp do_write_from_agent(account_uuid, agent_id, _payload, true) do
+    :ok
+  end
+  defp do_write_from_agent(account_uuid, agent_id, payload, false) do
     points = Enum.map(payload, fn {measurement, [timestamp, fields, tags]} ->
       tags = Map.put(tags, "account_uuid", account_uuid)
       tags = Map.put(tags, "agent_id", agent_id)
@@ -15,6 +28,19 @@ defmodule Metrist.InfluxStore do
       }
     end)
     write(%{points: points})
+    update_throttle(account_uuid, agent_id)
+  end
+
+  defp check_throttle(account_uuid, agent_id) do
+    case :ets.lookup(__MODULE__, {account_uuid, agent_id}) do
+      [{_key, last_time}] ->
+        last_time + @min_secs_between_writes > :erlang.system_time(:second)
+      [] ->
+        false
+    end
+  end
+  defp update_throttle(account_uuid, agent_id) do
+    :ets.insert(__MODULE__, {{account_uuid, agent_id}, :erlang.system_time(:second)})
   end
 
   def series_of(account_uuid, agent_id) do

@@ -20,13 +20,19 @@ defmodule MetristWeb.ChartComponent do
     socket = if series do
       # Initial call
       assign(socket,
+        account_uuid: assigns.account_uuid,
+        agent_name: assigns.agent_name,
         series: series,
         field: assigns.field,
         id: assigns.id,
+        alive?: assigns.alive?,
+        streaming?: false,
         data: [])
     else
-      # Data update call
-      assign(socket, data: assigns.data)
+      # Update call
+      socket = if Map.has_key?(assigns, :data), do: assign(socket, data: assigns.data), else: socket
+      socket = if Map.has_key?(assigns, :alive?), do: assign(socket, alive?: assigns.alive?), else: socket
+      socket
     end
     {:ok, socket}
   end
@@ -36,7 +42,7 @@ defmodule MetristWeb.ChartComponent do
     ~L"""
     <div id="chart-<%= @id %>">
       <div phx-hook="PhxChartComponent" id="chart-<%= @id %>--datasets" style="display:none;">
-      <%= for [time, value] <- assigns.data do %>
+      <%= for [time, value] <- @data do %>
         <span data-x="<%= @field %>" data-y="<%= value %>" data-z="<%= time %>"></span>
       <% end %>
       </div>
@@ -53,4 +59,5 @@ defmodule MetristWeb.ChartComponent do
     </div>
     """
   end
+
 end
