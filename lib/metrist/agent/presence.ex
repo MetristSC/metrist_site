@@ -44,14 +44,11 @@ end
         uuid: Id.generate(),
         account_uuid: account_uuid,
         agent_id: agent_id}
-      Logger.info("Agent does not exist, dispatching command #{inspect c}")
       Metrist.App.dispatch(c)
     end
 
     server = Metrist.Agent.PresenceSupervisor.find_or_start_child(account_uuid, agent_id)
-    Logger.info("Processing ping for #{account_uuid}/#{agent_id} to #{inspect server}")
     result = GenServer.cast(server, :ping_received)
-    Logger.info("Ping result: #{inspect result}")
     result
   end
 
@@ -66,7 +63,6 @@ end
 
   @impl true
   def init([account_uuid, agent_id]) do
-    Logger.info("Initializing presence server at #{inspect self()} for #{account_uuid},#{agent_id}")
     state = %State{account_uuid: account_uuid,
                    agent_id: agent_id,
                    state: :new}
@@ -77,7 +73,6 @@ end
 
   @impl true
   def handle_cast(:ping_received, state) do
-    Logger.info("Server processing ping for #{inspect state}")
     if state.state != :alive do
       broadcast_state_change(state, :alive)
     end
@@ -111,7 +106,6 @@ end
     message = {:agent_state_change, %{account_uuid: state.account_uuid,
                               agent_id: state.agent_id,
                               to_state: new_state}}
-    Logger.debug("#{inspect self()} broadcast on #{inspect state.account_uuid} from state #{state.state}: #{inspect message}")
     Metrist.PubSub.broadcast("agents", state.account_uuid, message)
   end
 
@@ -128,7 +122,6 @@ end
     |> Metrist.Repo.one()
     if agent do
       c = %Command.HandlePing{uuid: agent.uuid}
-      Logger.debug("Dispatching command #{inspect c}")
       Metrist.App.dispatch(c)
     else
       # and if not? We'll wait until registration is complete and do it the next round.

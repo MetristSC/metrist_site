@@ -75,7 +75,6 @@ defmodule MetristWeb.AgentSeriesLive do
 
   defp handle_fields_and_values(nil, socket), do: socket
   defp handle_fields_and_values([ts, fv_map, _tags], socket) do
-    Logger.info("We should send #{inspect fv_map} to our components!")
     ts = Metrist.Timestamps.to(ts, :microsecond)
     for {field, value} <- fv_map do
       id = "#{socket.assigns.series}.#{field}"

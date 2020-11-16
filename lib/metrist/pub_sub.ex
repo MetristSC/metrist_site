@@ -6,12 +6,10 @@ defmodule Metrist.PubSub do
   require Logger
 
   def broadcast(topic, id, payload) do
-    Logger.info("broadcast #{topic}:#{id} -> #{inspect payload}")
     Phoenix.PubSub.broadcast(__MODULE__, "#{topic}:#{id}", payload)
   end
 
   def subscribe(topic, id) do
-    Logger.info("subscribe #{topic}:#{id}")
     Phoenix.PubSub.subscribe(__MODULE__, "#{topic}:#{id}")
   end
 

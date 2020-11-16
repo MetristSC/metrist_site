@@ -1,5 +1,6 @@
 defmodule MetristWeb.DashboardLive do
   use Phoenix.LiveView
+  require Logger
 
   alias MetristWeb.Router.Helpers, as: Routes
   alias MetristWeb.Series
@@ -41,9 +42,6 @@ defmodule MetristWeb.DashboardLive do
     pid = self()
     if connected?(socket) do
       Task.async(fn -> poll_for_data(pid, session["current_user"]) end)
-    else
-      IO.puts("Hmm... socket not connected...")
-      IO.puts("#{inspect socket}")
     end
     socket = socket
     |> assign(:current_user, session["current_user"])
@@ -94,7 +92,7 @@ defmodule MetristWeb.DashboardLive do
   end
 
   def handle_info(msg, socket) do
-    IO.puts("Hmm... #{inspect msg}")
+    Logger.error("Unhandled message in dashboard_live.ex: #{inspect msg}")
     {:noreply, socket}
   end
 
