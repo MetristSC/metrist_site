@@ -3,7 +3,6 @@ defmodule Metrist.InfluxStore do
     otp_app: :metrist
 
   def write_from_agent(account_uuid, agent_id, payload) do
-    IO.puts("Write #{inspect payload}")
     points = Enum.map(payload, fn {measurement, [timestamp, fields, tags]} ->
       tags = Map.put(tags, "account_uuid", account_uuid)
       tags = Map.put(tags, "agent_id", agent_id)
@@ -20,7 +19,6 @@ defmodule Metrist.InfluxStore do
 
   def series_of(account_uuid, agent_id) do
     query = "SHOW MEASUREMENTS WHERE account_uuid = '#{account_uuid}' AND agent_id = '#{agent_id}'"
-    IO.puts("Querying: #{query}")
     values = case query(query) do
       %{results: [%{series: [%{values: values}]}]}  -> values
       _ -> []
