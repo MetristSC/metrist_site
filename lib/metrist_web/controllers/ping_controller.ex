@@ -41,10 +41,21 @@ defmodule MetristWeb.PingController do
     agent = Metrist.Agent.Projection.by_account_and_agent_id(account_uuid, agent_id)
     |> Metrist.Repo.one()
     Logger.info("Agent is: #{inspect agent}")
+    payload = internalize_timestamps(payload)
+    Logger.info("Payload is: #{inspect payload}")
     if agent do
       Logger.info("We have a agent uuid, can broadcast and write")
       Metrist.PubSub.broadcast("agent", agent.uuid, {:metrics_received, payload})
       Metrist.InfluxStore.write_from_agent(account_uuid, agent.agent_id, payload)
     end
   end
+
+  defp internalize_timestamps(payload) do
+    payload
+    |> Enum.map(fn {series, [ts, values, tags]} ->
+      {series, [Metrist.Timestamps.from(:nanosecond, ts), values, tags]}
+    end)
+    |> Map.new()
+  end
+
 end

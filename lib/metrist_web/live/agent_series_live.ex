@@ -45,7 +45,7 @@ defmodule MetristWeb.AgentSeriesLive do
     for field <- fields do
       id = "#{socket.assigns.series}.#{field}"
       send_update(MetristWeb.ChartComponent, id: id,
-        data: Metrist.InfluxStore.values_for(series_name, field))
+        data: Metrist.InfluxStore.values_for(series_name, field, :microsecond))
     end
     Metrist.PubSub.subscribe("agent", agent.uuid)
     {:noreply, socket}
@@ -76,9 +76,7 @@ defmodule MetristWeb.AgentSeriesLive do
   defp handle_fields_and_values(nil, socket), do: socket
   defp handle_fields_and_values([ts, fv_map, _tags], socket) do
     Logger.info("We should send #{inspect fv_map} to our components!")
-    # :poop: - we receive microseconds from InfluxDB and nanoseconds from live agent updates.
-    # TODO one time unit that's consistent.
-    ts = if ts > 1_000_000_000_000_000_000, do: ts / 1_000, else: ts
+    ts = Metrist.Timestamps.to(ts, :microsecond)
     for {field, value} <- fv_map do
       id = "#{socket.assigns.series}.#{field}"
       send_update(MetristWeb.ChartComponent, id: id, data: [[ts, value]])
