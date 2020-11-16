@@ -6,7 +6,7 @@ defmodule MetristWeb.DashboardLive do
 
   def render(assigns) do
     ~L"""
-    <%= if is_nil(@agents) or MapSet.size(@agents) == 0 do %>
+    <%= if is_nil(@known_agents) or MapSet.size(@known_agents) == 0 do %>
     (Waiting for agents to register)
     <% else %>
     <table class="border border-gray-500">
@@ -14,9 +14,9 @@ defmodule MetristWeb.DashboardLive do
         <th>Agent</th>
         <th>Series</th>
       </tr>
-      <%= for agent <- @agents do %>
+      <%= for agent <- @known_agents do %>
       <tr>
-        <td class="border p-2"><%= agent %></td>
+        <td class="border p-2"><%= agent %><%= if agent in @present_agents, do: " (active)" %></td>
         <td class="border p-2">
           <% all_series = Metrist.InfluxStore.series_of(@account_uuid, agent) %>
           <%= for series <- all_series do %>
@@ -50,7 +50,8 @@ defmodule MetristWeb.DashboardLive do
     |> assign(:owner_uuid, "Fetching...")
     |> assign(:account_uuid, "Fetching...")
     |> assign(:api_key, "Fetching...")
-    |> assign(:agents, MapSet.new())
+    |> assign(:present_agents, MapSet.new())
+    |> assign(:known_agents, MapSet.new())
     {:ok, socket}
   end
   def mount(_params, _session, socket) do
@@ -62,14 +63,20 @@ defmodule MetristWeb.DashboardLive do
   end
 
   def handle_info({:account_uuid, account_uuid}, socket) do
-    agents = account_uuid
+    present_agents = account_uuid
     |> Metrist.Agent.PresenceSupervisor.all_for()
     |> Enum.map(fn {agent, _pid} -> agent end)
+    |> MapSet.new()
+    known_agents = account_uuid
+    |> Metrist.Agent.Projection.by_account()
+    |> Metrist.Repo.all()
+    |> Enum.map(fn agent -> agent.agent_id end)
     |> MapSet.new()
     Metrist.Agent.Presence.subscribe(account_uuid)
     socket = socket
     |> assign(:account_uuid, account_uuid)
-    |> assign(:agents, agents)
+    |> assign(:present_agents, present_agents)
+    |> assign(:known_agents, known_agents)
     {:noreply, socket}
   end
 
@@ -77,13 +84,13 @@ defmodule MetristWeb.DashboardLive do
     {:noreply, assign(socket, :api_key, api_key)}
   end
   def handle_info({:agent_state_change, agent_data}, socket) do
-    current_agents = socket.assigns.agents
+    current_agents = socket.assigns.present_agents
     current_agents = if agent_data.to_state == :inactive do
       MapSet.delete(current_agents, agent_data.agent_id)
     else
       MapSet.put(current_agents, agent_data.agent_id)
     end
-    {:noreply, assign(socket, :agents, current_agents)}
+    {:noreply, assign(socket, :present_agents, current_agents)}
   end
 
   def handle_info(msg, socket) do
