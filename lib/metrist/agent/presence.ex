@@ -29,7 +29,6 @@ end
     defstruct [:account_uuid, :agent_id, :agent_uuid, :state, :timer_ref]
   end
 
-
   def start_link([account_uuid, agent_id, name]) do
     GenServer.start_link(__MODULE__, [account_uuid, agent_id], name: name)
   end
@@ -59,6 +58,16 @@ end
     Metrist.PubSub.subscribe("agents", account_uuid)
   end
 
+  @doc """
+  Return true if we consider the agent to be alive
+  """
+  def alive?(account_uuid, agent_id) do
+    case Metrist.Agent.PresenceSupervisor.find_child(account_uuid, agent_id) do
+      nil -> false
+      pid -> GenServer.call(pid, :alive?)
+    end
+  end
+
   # Server side
 
   @impl true
@@ -69,6 +78,11 @@ end
     broadcast_state_change(state, :alive)
     state = schedule_timeout(state, :alive)
     {:ok, state}
+  end
+
+  @impl true
+  def handle_call(:alive?, _from, state) do
+    {:reply, state.state == :alive, state}
   end
 
   @impl true

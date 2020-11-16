@@ -13,15 +13,22 @@ defmodule Metrist.Agent.PresenceSupervisor do
   end
 
   @doc """
+  Find the running process, return nil if no process is running
+  """
+  def find_child(account_uuid, agent_id) do
+    case Registry.lookup(@registry, {account_uuid, agent_id}) do
+      [{pid, _}] -> pid
+      [] -> nil
+    end
+  end
+
+  @doc """
   Find the running process for the agent or start a new one.
   """
   def find_or_start_child(account_uuid, agent_id) do
-    case Registry.lookup(@registry, {account_uuid, agent_id}) do
-      [{pid, _}] ->
-        Logger.info("Presence server for #{agent_id} is #{inspect pid}")
-        make_name(account_uuid, agent_id)
-      [] ->
-        start_child(account_uuid, agent_id)
+    case find_child(account_uuid, agent_id) do
+      nil -> start_child(account_uuid, agent_id)
+      pid -> pid
     end
   end
 

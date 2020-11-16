@@ -13,12 +13,14 @@ defmodule MetristWeb.AgentSeriesLive do
   @impl true
   def render(assigns) do
     ~L"""
-    <div class="pl-4 text-lg">Metrics for <%= @series %></div>
+    <div class="pl-4 text-lg">Metrics for <%= @series %>.
+      Agent is <%= if @alive?, do: "alive", else: "dead" %></div>
     <div class="grid grid-cols-2 gap-2">
     <%= for field <- @fields do %>
       <div class="bg-white m-2 p-2 rounded-2xl shadow-xl">
         <%= id = @series <> "." <> field
-            live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field %>
+            live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field,
+              alive?: @alive? %>
       </div>
     <% end %>
     </div>
@@ -35,6 +37,8 @@ defmodule MetristWeb.AgentSeriesLive do
     # TODO move this out of the _web app
     agent = Metrist.Agent.Projection.by_account_and_agent_id(params["account_uuid"], params["agent_name"])
     |> Metrist.Repo.one!()
+    # TODO maybe move this out to presence.ex?
+    Metrist.PubSub.subscribe("agents", params["account_uuid"])
     socket = socket
     |> assign(:agent_name, params["agent_name"])
     |> assign(:agent_uuid, agent.uuid)
@@ -42,6 +46,7 @@ defmodule MetristWeb.AgentSeriesLive do
     |> assign(:series, series_name)
     |> assign(:series_name, params["series_name"])
     |> assign(:fields, fields)
+    |> assign(:alive?, Metrist.Agent.Presence.alive?(params["account_uuid"], params["agent_name"]))
     for field <- fields do
       id = "#{socket.assigns.series}.#{field}"
       send_update(MetristWeb.ChartComponent, id: id,
@@ -68,6 +73,19 @@ defmodule MetristWeb.AgentSeriesLive do
     |> handle_fields_and_values(socket)
     {:noreply, socket}
   end
+  def handle_info({:agent_state_change, info}, socket) do
+    agent_id = Map.get(info, :agent_id)
+    socket = if agent_id == socket.assigns.agent_name do
+      is_alive = Map.get(info, :to_state) == :alive
+      socket = assign(socket, :alive?, is_alive)
+      # TODO update chart children
+      socket
+    else
+      socket
+    end
+    {:noreply, socket}
+  end
+
   def handle_info(msg, socket) do
     Logger.error("Received unhandled message: #{inspect msg}")
     {:noreply, socket}
