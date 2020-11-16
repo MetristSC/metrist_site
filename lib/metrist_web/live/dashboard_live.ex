@@ -2,6 +2,7 @@ defmodule MetristWeb.DashboardLive do
   use Phoenix.LiveView
 
   alias MetristWeb.Router.Helpers, as: Routes
+  alias MetristWeb.Series
 
   def render(assigns) do
     ~L"""
@@ -17,10 +18,12 @@ defmodule MetristWeb.DashboardLive do
       <tr>
         <td class="border p-2"><%= agent %></td>
         <td class="border p-2">
-          <% series = Metrist.InfluxStore.series_of(@account_uuid, agent) %>
-          <%= for serie <- series do %>
-            <%= live_redirect to: Routes.live_path(@socket, MetristWeb.AgentSeriesLive, agent, serie) do %>
-              <div style="cursor: pointer"><%= serie %></div>
+          <% all_series = Metrist.InfluxStore.series_of(@account_uuid, agent) %>
+          <%= for series <- all_series do %>
+            <%=
+               short_name = Series.short_name(series)
+               live_redirect to: Routes.live_path(@socket, MetristWeb.AgentSeriesLive, assigns.account_uuid, agent, short_name) do %>
+              <div style="cursor: pointer"><%= short_name %></div>
             <% end %>
           <% end %>
         </td>
@@ -85,14 +88,6 @@ defmodule MetristWeb.DashboardLive do
 
   def handle_info(msg, socket) do
     IO.puts("Hmm... #{inspect msg}")
-    {:noreply, socket}
-  end
-
-
-  def handle_event("showseries", %{"agent" => agent, "serie" => serie}, socket) do
-    socket = socket
-    |> push_redirect(to: MetristWeb.Router.Helpers.live_path(socket, MetristWeb.AgentSeriesLive,
-        agent, serie))
     {:noreply, socket}
   end
 

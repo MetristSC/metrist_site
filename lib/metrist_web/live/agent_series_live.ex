@@ -2,6 +2,8 @@ defmodule MetristWeb.AgentSeriesLive do
   use Phoenix.LiveView
   require Logger
 
+  alias MetristWeb.Series
+
   @moduledoc """
   Render a set of metrics on a dashboard.
   """
@@ -26,21 +28,9 @@ defmodule MetristWeb.AgentSeriesLive do
   # See the router. Because of the slashes in the full series name, we can expect either
   # variant. Handle both for now, but TODO is maybe reconsider using slashes as separators.
   @impl true
-  def handle_params(params = %{"agent_name" => _}, _uri, socket) do
-    params
-    |> Map.put("series", "#{params["account_uuid"]}/#{params["agent_name"]}/#{params["series_name"]}")
-    |> do_handle_params(socket)
-  end
-  def handle_params(params = %{"agent" => _}, _uri, socket) do
-    [account_uuid, agent_name, series_name] = String.split(params["series"], "/")
-    params
-    |> Map.put("agent_name", agent_name)
-    |> Map.put("account_uuid", account_uuid)
-    |> Map.put("series_name", series_name)
-    |> do_handle_params(socket)
-  end
-  defp do_handle_params(params, socket) do
-    fields = Metrist.InfluxStore.fields_of(params["series"])
+  def handle_params(params, _uri, socket) do
+    series_name = Series.full_name(params)
+    fields = Metrist.InfluxStore.fields_of(series_name)
     fields = Enum.map(fields, fn [field_name, _type] -> field_name end)
     # TODO move this out of the _web app
     agent = Metrist.Agent.Projection.by_account_and_agent_id(params["account_uuid"], params["agent_name"])
@@ -49,13 +39,13 @@ defmodule MetristWeb.AgentSeriesLive do
     |> assign(:agent_name, params["agent_name"])
     |> assign(:agent_uuid, agent.uuid)
     |> assign(:account_uuid, params["account_uuid"])
-    |> assign(:series, params["series"])
+    |> assign(:series, series_name)
     |> assign(:series_name, params["series_name"])
     |> assign(:fields, fields)
     for field <- fields do
       id = "#{socket.assigns.series}.#{field}"
       send_update(MetristWeb.ChartComponent, id: id,
-        data: Metrist.InfluxStore.values_for(params["series"], field))
+        data: Metrist.InfluxStore.values_for(series_name, field))
     end
     Metrist.PubSub.subscribe("agent", agent.uuid)
     {:noreply, socket}

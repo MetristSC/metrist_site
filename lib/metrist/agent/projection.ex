@@ -18,6 +18,11 @@ defmodule Metrist.Agent.Projection do
          and n.agent_id == ^agent_id)
   end
 
+  def by_account(account_uuid) do
+    from(n in __MODULE__,
+      where: n.account_uuid == ^account_uuid)
+  end
+
   def by_uuid(uuid) do
     from(n in __MODULE__,
       where: n.uuid == ^uuid)
