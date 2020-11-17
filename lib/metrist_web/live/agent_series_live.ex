@@ -25,6 +25,7 @@ defmodule MetristWeb.AgentSeriesLive do
       </div>
     <% end %>
     </div>
+    <div class="text-center font-thin">(drag to zoom, double-click to reset zoom)</div>
     """
   end
 

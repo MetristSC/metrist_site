@@ -44,7 +44,7 @@ defmodule MetristWeb.PingController do
       Metrist.PubSub.broadcast("agent", agent.uuid, {:metrics_received, payload})
       Metrist.InfluxStore.write_from_agent(account_uuid, agent.agent_id, payload)
     else
-      :ok # We're probably setting up things for a new agent...
+      :ok # We're probably setting up things for a new agent, next ping all will be well
     end
   end
 
@@ -55,5 +55,4 @@ defmodule MetristWeb.PingController do
     end)
     |> Map.new()
   end
-
 end

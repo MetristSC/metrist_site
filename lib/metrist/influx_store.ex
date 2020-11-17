@@ -1,6 +1,7 @@
 defmodule Metrist.InfluxStore do
   use Instream.Connection,
     otp_app: :metrist
+  require Logger
 
   @min_secs_between_writes 60
 
@@ -12,10 +13,11 @@ defmodule Metrist.InfluxStore do
     needs_throttle = check_throttle(account_uuid, agent_id)
     do_write_from_agent(account_uuid, agent_id, payload, needs_throttle)
   end
-  defp do_write_from_agent(account_uuid, agent_id, _payload, true) do
+
+  defp do_write_from_agent(_account_uuid, _agent_id, _payload, _throttle = true) do
     :ok
   end
-  defp do_write_from_agent(account_uuid, agent_id, payload, false) do
+  defp do_write_from_agent(account_uuid, agent_id, payload, _throttle = false) do
     points = Enum.map(payload, fn {measurement, [timestamp, fields, tags]} ->
       tags = Map.put(tags, "account_uuid", account_uuid)
       tags = Map.put(tags, "agent_id", agent_id)
@@ -27,7 +29,11 @@ defmodule Metrist.InfluxStore do
         timestamp: timestamp
       }
     end)
-    write(%{points: points})
+    case write(%{points: points}) do
+      %{error: error} ->
+        Logger.error("Influx write error for agent #{account_uuid}/#{agent_id}: #{inspect error}")
+      _ -> nil
+    end
     update_throttle(account_uuid, agent_id)
   end
 
