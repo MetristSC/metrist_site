@@ -28,12 +28,14 @@ const XAxis = (_options) => {
   return {
     space: 55,
     values: [
-      [3600 * 24 * 365, "{YYYY}", 7, "{YYYY}"],
-      [3600 * 24 * 28, "{MMM}", 7, "{MMM}\n{YYYY}"],
-      [3600 * 24, "{MM}-{DD}", 7, "{MM}-{DD}\n{YYYY}"],
-      [3600, "{HH}:{mm}", 4, "{HH}:{mm}\n{YYYY}-{MM}-{DD}"],
-      [60, "{HH}:{mm}", 4, "{HH}:{mm}\n{YYYY}-{MM}-{DD}"],
-      [1, "{ss}", 2, "{HH}:{mm}:{ss}\n{YYYY}-{MM}-{DD}"],
+      // tick incr          default         year                         month    day                    hour     min                sec       mode
+      [3600 * 24 * 365,   "{YYYY}",         null,                        null,    null,                  null,    null,              null,        1],
+      [3600 * 24 * 28,    "{MMM}",          "\n{YYYY}",                  null,    null,                  null,    null,              null,        1],
+      [3600 * 24,         "{M}/{D}",        "\n{YYYY}",                  null,    null,                  null,    null,              null,        1],
+      [3600,              "{H}",           "\n{YYYY}/{MM}/{DD}",            null,    "\n{M}/{D}",           null,    null,              null,        1],
+      [60,                "{H}:{mm}",     "\n{YYYY}/{MM}/{DD}",            null,    "\n{M}/{D}",           null,    null,              null,        1],
+      [1,                 ":{ss}",         "\n{YYYY}/{MM}/{DD} {H}:{mm}",   null,    "\n{M}/{D} {H}:{mm}",  null,    "\n{H}:{mm}",  null,        1],
+      [0.001,             ":{ss}.{fff}",   "\n{YYYY}/{MM}/{DD} {H}:{mm}",   null,    "\n{M}/{D} {H}:{mm}",  null,    "\n{H}:{mm}",  null,        1],
     ]
   }
 }
@@ -447,7 +449,6 @@ export class TelemetryChart {
 
 const PhxChartComponent = {
   mounted() {
-    console.log("==== MOUNTED ====", this)
     let chartEl = this.el.parentElement.querySelector('.chart')
     let size = chartEl.getBoundingClientRect()
     let options = Object.assign({}, chartEl.dataset, {
@@ -455,7 +456,7 @@ const PhxChartComponent = {
       width: Math.max(size.width, minChartSize.width),
       height: minChartSize.height,
       now: new Date() / 1e3,
-      refreshInterval: 1000
+      refreshInterval: 1000,
     })
 
     this.chart = new TelemetryChart(chartEl, options)
@@ -466,7 +467,6 @@ const PhxChartComponent = {
     }))
   },
   updated() {
-    console.log("==== UPDATED ====", this)
     const data = Array
       .from(this.el.children || [])
       .map(({ dataset: { x, y, z } }) => {
@@ -475,13 +475,11 @@ const PhxChartComponent = {
         return { x, y: +y, z: +z / 1e6 }
       })
 
-    console.log("Data is", data)
     if (data.length > 0) {
       this.chart.pushData(data)
     }
   },
   destroyed() {
-    console.log("==== DESTROYED ====", this)
     this.chart.clearTimers()
   }
 }

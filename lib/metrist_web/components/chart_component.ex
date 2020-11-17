@@ -26,12 +26,10 @@ defmodule MetristWeb.ChartComponent do
         field: assigns.field,
         id: assigns.id,
         alive?: assigns.alive?,
-        streaming?: false,
         data: [])
     else
       # Update call
       socket = if Map.has_key?(assigns, :data), do: assign(socket, data: assigns.data), else: socket
-      socket = if Map.has_key?(assigns, :alive?), do: assign(socket, alive?: assigns.alive?), else: socket
       socket
     end
     {:ok, socket}
@@ -50,10 +48,10 @@ defmodule MetristWeb.ChartComponent do
           id="chart-ignore-<%= @id %>"
           phx-update="ignore"
           data-label="<%= @field %>"
-          data-metric="<%= "summary" %>"
+          data-metric="summary"
           data-title="<%= @field %>"
-          data-tags="<%= "" %>"
-          data-unit="B"
+          data-tags=""
+          data-unit=""
           data-prune-threshold="1000">
       </div>
     </div>

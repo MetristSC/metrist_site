@@ -12,12 +12,13 @@ defmodule MetristWeb.AgentSeriesLive do
 
   @impl true
   def render(assigns) do
+    # TODO CSS here can be cleaner.
     ~L"""
     <div class="pl-4 text-lg">Metrics for <%= @series %>.
       <%= render_button(@alive?, @streaming?, assigns) %></div>
-    <div class="grid grid-cols-2 gap-2">
+    <div class="flex flex-row flex-wrap">
     <%= for field <- @fields do %>
-      <div class="bg-white m-2 p-2 rounded-2xl shadow-xl">
+      <div class="bg-white m-2 p-2 rounded-2xl shadow-xl" style="flex: 1 0 50%; max-width: 650px; min-width: 550px">
         <%= id = @series <> "." <> field
             live_component @socket, MetristWeb.ChartComponent, id: id, series: @series, field: field,
               alive?: @alive?, account_uuid: @account_uuid, agent_name: @agent_name %>
@@ -127,10 +128,10 @@ defmodule MetristWeb.AgentSeriesLive do
   end
 
   def render_button(_alive = true, _streaming = false, assigns) do
-    ~L(<button phx-click="start-streaming">Start streaming</button>)
+    ~L(<button phx-click="start-streaming" class="hover:font-bold">Start streaming</button>)
   end
   def render_button(_alive = true, _streaming = true, assigns) do
-    ~L(<button phx-click="stop-streaming">Stop streaming</button>)
+    ~L(<button phx-click="stop-streaming" class="hover:font-bold">Stop streaming</button>)
   end
   def render_button(_alive = false, _streaming, _assigns) do
     "(agent is not alive)"
