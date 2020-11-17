@@ -32,10 +32,10 @@ const XAxis = (_options) => {
       [3600 * 24 * 365,   "{YYYY}",         null,                        null,    null,                  null,    null,              null,        1],
       [3600 * 24 * 28,    "{MMM}",          "\n{YYYY}",                  null,    null,                  null,    null,              null,        1],
       [3600 * 24,         "{M}/{D}",        "\n{YYYY}",                  null,    null,                  null,    null,              null,        1],
-      [3600,              "{H}",           "\n{YYYY}/{MM}/{DD}",            null,    "\n{M}/{D}",           null,    null,              null,        1],
-      [60,                "{H}:{mm}",     "\n{YYYY}/{MM}/{DD}",            null,    "\n{M}/{D}",           null,    null,              null,        1],
-      [1,                 ":{ss}",         "\n{YYYY}/{MM}/{DD} {H}:{mm}",   null,    "\n{M}/{D} {H}:{mm}",  null,    "\n{H}:{mm}",  null,        1],
-      [0.001,             ":{ss}.{fff}",   "\n{YYYY}/{MM}/{DD} {H}:{mm}",   null,    "\n{M}/{D} {H}:{mm}",  null,    "\n{H}:{mm}",  null,        1],
+      [3600,              "{HH}",           "\n{YYYY}/{MM}/{DD}",            null,    "\n{M}/{D}",           null,    null,              null,        1],
+      [60,                "{HH}:{mm}",     "\n{YYYY}/{MM}/{DD}",            null,    "\n{M}/{D}",           null,    null,              null,        1],
+      [1,                 ":{ss}",         "\n{YYYY}/{MM}/{DD} {HH}:{mm}",   null,    "\n{M}/{D} {HH}:{mm}",  null,    "\n{HH}:{mm}",  null,        1],
+      [0.001,             ":{ss}.{fff}",   "\n{YYYY}/{MM}/{DD} {HH}:{mm}",   null,    "\n{M}/{D} {HH}:{mm}",  null,    "\n{HH}:{mm}",  null,        1],
     ]
   }
 }
