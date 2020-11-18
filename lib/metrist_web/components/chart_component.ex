@@ -10,7 +10,6 @@ defmodule MetristWeb.ChartComponent do
 
   @impl true
   def mount(socket) do
-    # TODO We can optimize here to get all the data in one call from InfluxDB
     {:ok, socket, temporary_assigns: [data: []]}
   end
 
@@ -26,10 +25,12 @@ defmodule MetristWeb.ChartComponent do
         field: assigns.field,
         id: assigns.id,
         alive?: assigns.alive?,
+        clear: true,
         data: [])
     else
       # Update call
       socket = if Map.has_key?(assigns, :data), do: assign(socket, data: assigns.data), else: socket
+      socket = if Map.has_key?(assigns, :clear), do: assign(socket, clear: assigns.clear), else: socket
       socket
     end
     {:ok, socket}
@@ -52,10 +53,10 @@ defmodule MetristWeb.ChartComponent do
           data-title="<%= @field %>"
           data-tags=""
           data-unit=""
+          data-clear="<%= @clear %>"
           data-prune-threshold="1000">
       </div>
     </div>
     """
   end
-
 end

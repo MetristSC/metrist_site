@@ -3,7 +3,9 @@ defmodule Metrist.InfluxStore do
     otp_app: :metrist
   require Logger
 
-  @min_secs_between_writes 60
+  # Space saver - we only write a data point this often.
+  # TODO write an average for all the datapoints we do not write
+  @min_secs_between_writes 300
 
   def initialize() do
     :ets.new(__MODULE__, [:public, :set, :named_table])

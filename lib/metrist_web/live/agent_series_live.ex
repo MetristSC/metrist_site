@@ -14,8 +14,19 @@ defmodule MetristWeb.AgentSeriesLive do
   def render(assigns) do
     # TODO CSS here can be cleaner.
     ~L"""
-    <div class="pl-4 text-lg">Metrics for <%= @series %>.
-      <%= render_button(@alive?, @streaming?, assigns) %></div>
+    <div class="flex flex-row">
+      <div class="flex-grow pl-4 text-lg">Metrics for <%= @series %>.</div>
+      <div class="ml-4 mr-4"><%= render_button(@alive?, @streaming?, assigns) %></div>
+      <div>
+        <select phx-click="change-interval">
+          <option value="24h">Last 24h</option>
+          <option value="12h">Last 12h</option>
+          <option value="1h">Last hour</option>
+          <option value="5m">Last 5m</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
+    </div>
     <div class="flex flex-row flex-wrap">
     <%= for field <- @fields do %>
       <div class="bg-white m-2 p-2 rounded-2xl shadow-xl" style="flex: 1 0 50%; max-width: 650px; min-width: 550px">
@@ -33,8 +44,8 @@ defmodule MetristWeb.AgentSeriesLive do
   # variant. Handle both for now, but TODO is maybe reconsider using slashes as separators.
   @impl true
   def handle_params(params, _uri, socket) do
-    series_name = Series.full_name(params)
-    fields = Metrist.InfluxStore.fields_of(series_name)
+    full_series_name = Series.full_name(params)
+    fields = Metrist.InfluxStore.fields_of(full_series_name)
     fields = Enum.map(fields, fn [field_name, _type] -> field_name end)
     # TODO move this out of the _web app
     agent = Metrist.Agent.Projection.by_account_and_agent_id(params["account_uuid"], params["agent_name"])
@@ -45,18 +56,13 @@ defmodule MetristWeb.AgentSeriesLive do
     |> assign(:agent_name, params["agent_name"])
     |> assign(:agent_uuid, agent.uuid)
     |> assign(:account_uuid, params["account_uuid"])
-    |> assign(:series, series_name)
+    |> assign(:series, full_series_name)
     |> assign(:series_name, params["series_name"])
     |> assign(:fields, fields)
     |> assign(:alive?, Metrist.Agent.Presence.alive?(params["account_uuid"], params["agent_name"]))
     |> assign(:streaming?, false)
-    stop = :erlang.system_time(:second)
-    start = stop - 3600 * 24 # Default, to do: drop-down
-    for field <- fields do
-      id = "#{socket.assigns.series}.#{field}"
-      send_update(MetristWeb.ChartComponent, id: id,
-        data: Metrist.InfluxStore.values_for(series_name, field, {start, stop}, :microsecond))
-    end
+    |> assign(:interval, "24h")
+    load_data(socket)
     Metrist.PubSub.subscribe("agent", agent.uuid)
     {:noreply, socket}
   end
@@ -81,7 +87,7 @@ defmodule MetristWeb.AgentSeriesLive do
   def handle_info({:metrics_received, metrics}, socket) do
     metrics
     |> Map.get(socket.assigns.series_name)
-    |> handle_fields_and_values(socket)
+    |> send_incremental_data(socket)
     {:noreply, socket}
   end
   def handle_info({:agent_state_change, info}, socket) do
@@ -116,17 +122,28 @@ defmodule MetristWeb.AgentSeriesLive do
     socket = assign(socket, :streaming?, false)
     {:noreply, socket}
   end
+  def handle_event("change-interval", value, socket) do
+    selected_interval = value["value"]
+    socket = if socket.assigns.interval != selected_interval do
+      socket = assign(socket, :interval, selected_interval)
+      load_data(socket)
+      socket
+    else
+      socket
+    end
+    {:noreply, socket}
+  end
   def handle_event(event, value, socket) do
-    IO.puts("HANDLE ME: #{inspect event}, #{inspect value}")
+    Logger.error("HANDLE ME: #{inspect event}, #{inspect value}")
     {:noreply, socket}
   end
 
-  defp handle_fields_and_values(nil, socket), do: socket
-  defp handle_fields_and_values([ts, fv_map, _tags], socket) do
+  defp send_incremental_data(nil, socket), do: socket
+  defp send_incremental_data([ts, fv_map, _tags], socket) do
     ts = Metrist.Timestamps.to(ts, :microsecond)
     for {field, value} <- fv_map do
       id = "#{socket.assigns.series}.#{field}"
-      send_update(MetristWeb.ChartComponent, id: id, data: [[ts, value]])
+      send_update(MetristWeb.ChartComponent, id: id, clear: false, data: [[ts, value]])
     end
   end
 
@@ -140,4 +157,20 @@ defmodule MetristWeb.AgentSeriesLive do
     "(agent is not alive)"
   end
 
+  defp load_data(socket) do
+    delta = interval_for(socket.assigns.interval)
+    stop = :erlang.system_time(:second)
+    start = stop - delta
+    for field <- socket.assigns.fields do
+      id = "#{socket.assigns.series}.#{field}"
+      send_update(MetristWeb.ChartComponent, id: id,
+        clear: true,
+        data: Metrist.InfluxStore.values_for(socket.assigns.series, field, {start, stop}, :microsecond))
+    end
+  end
+
+  defp interval_for("24h"), do: 24 * 3600
+  defp interval_for("12h"), do: 12 * 3600
+  defp interval_for("1h"), do: 1 * 3600
+  defp interval_for("5m"), do: 5 * 60
 end

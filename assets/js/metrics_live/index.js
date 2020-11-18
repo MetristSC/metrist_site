@@ -12,7 +12,7 @@ const SeriesValue = (options) => {
 
 const XSeriesValue = (options) => {
   return {
-    value: '{YYYY}-{MM}-{DD} {HH}:{mm}:{ss}'
+    value: '{YYYY}/{MM}/{DD} {HH}:{mm}:{ss}'
   }
 }
 
@@ -139,10 +139,6 @@ class CommonMetric {
         newSeriesConfig(options, 0)
       ],
       scales: {
-//        x: {
-          //min: options.now - 60,
-          //max: options.now
-        //},
         y: {
           min: 0,
           max: 1
@@ -176,8 +172,8 @@ class CommonMetric {
   }
 
   handleMeasurements(measurements) {
-    // prune datasets when we reach the max number of events
-    console.log("handleMeasurements", measurements)
+    // slide the dataset - we prune the oldest stuff so we can add the
+    // new measurements without adding to the total number of data points.
     let newSize = measurements.length
     this.datasets = this.datasets.map(({ data, ...rest }) => {
       return { data: data.slice(measurements.length), ...rest }
@@ -185,6 +181,13 @@ class CommonMetric {
 
     measurements.forEach((measurement) => this.__handler.call(this, measurement, this.__callback))
     this.chart.setData(dataForDatasets(this.datasets))
+  }
+
+  clear() {
+    this.datasets = this.datasets.map(({ data, ...rest }) => {
+      return { data: [], ...rest }
+    })
+    this.chart.setData([])
   }
 }
 
@@ -200,12 +203,11 @@ export class TelemetryChart {
 
     // setup the data buffer
     let isBufferingData = typeof options.refreshInterval !== "undefined"
-    this._isBufferingData = isBufferingData
     this._buffer = []
-    this._timer = isBufferingData ? setInterval(
+    this._timer = setInterval(
       this._flushToChart.bind(this),
       +options.refreshInterval
-    ) : null
+    )
   }
 
   clearTimers() { clearInterval(this._timer) }
@@ -219,12 +221,12 @@ export class TelemetryChart {
 
   pushData(measurements) {
     if (!measurements.length) return
-    let callback = this._isBufferingData ? this._pushToBuffer : this._pushToChart
-    callback.call(this, measurements)
+    this._buffer = this._buffer.concat(measurements)
   }
 
-  _pushToBuffer(measurements) {
-    this._buffer = this._buffer.concat(measurements)
+  clearData() {
+    this._buffer = []
+    this.metric.clear()
   }
 
   _pushToChart(measurements) {
@@ -256,9 +258,7 @@ const PhxChartComponent = {
     let options = Object.assign({}, chartEl.dataset, {
       tagged: (chartEl.dataset.tags && chartEl.dataset.tags !== "") || false,
       width: Math.max(size.width, minChartSize.width),
-      height: minChartSize.height,
-      now: new Date() / 1e3,
-      refreshInterval: 1000,
+      height: minChartSize.height
     })
 
     this.chart = new TelemetryChart(chartEl, options)
@@ -269,6 +269,12 @@ const PhxChartComponent = {
     }))
   },
   updated() {
+    let chartEl = this.el.parentElement.querySelector('.chart')
+    if (chartEl.dataset.clear == "true") {
+      // We're doing a full refresh
+      this.chart.clearData();
+    }
+
     const data = Array
       .from(this.el.children || [])
       .map(({ dataset: { x, y, z } }) => {
