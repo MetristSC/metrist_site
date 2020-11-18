@@ -32,12 +32,12 @@
     </div>
       <%= if @current_user do %>
         <div class="flex-none"><%= link "Home", to: "/home" %></div>
+        <div class="flex-grow pl-4">
         <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
-          <div class="flex-grow pl-4">
-            <%= link "Phoenix Dashboard", to: Routes.live_dashboard_path(@conn, :home),
-                class: "nav-link" %>
-          </div>
+          <%= link "Phoenix Dashboard", to: Routes.live_dashboard_path(@conn, :home),
+              class: "nav-link" %>
         <% end %>
+        </div>
         <div class="flex flex-none space-x-2 place-items-center mr-4">
           <div class="flex-none"><%= @current_user.name %></div>
           <img class="flex-none object-scale-down h-8 rounded-full" src="<%= @current_user.avatar %>">
