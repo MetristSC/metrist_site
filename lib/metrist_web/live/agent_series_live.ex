@@ -22,7 +22,7 @@ defmodule MetristWeb.AgentSeriesLive do
           <option value="24h">Last 24h</option>
           <option value="12h">Last 12h</option>
           <option value="1h">Last hour</option>
-          <option value="5m">Last 5m</option>
+          <option value="30m">Last 30m</option>
           <option value="all">All time</option>
         </select>
       </div>
@@ -172,5 +172,5 @@ defmodule MetristWeb.AgentSeriesLive do
   defp interval_for("24h"), do: 24 * 3600
   defp interval_for("12h"), do: 12 * 3600
   defp interval_for("1h"), do: 1 * 3600
-  defp interval_for("5m"), do: 5 * 60
+  defp interval_for("30m"), do: 30 * 60
 end

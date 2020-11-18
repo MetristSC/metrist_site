@@ -174,10 +174,14 @@ class CommonMetric {
   handleMeasurements(measurements) {
     // slide the dataset - we prune the oldest stuff so we can add the
     // new measurements without adding to the total number of data points.
-    let newSize = measurements.length
-    this.datasets = this.datasets.map(({ data, ...rest }) => {
-      return { data: data.slice(measurements.length), ...rest }
-    })
+    // however, we let things fill up until the prune value is reached.
+    let currentSize = this.datasets[0].data.length
+    let toPrune = (currentSize - this.pruneThreshold) + measurements.length
+    if (toPrune > 0) {
+      this.datasets = this.datasets.map(({ data, ...rest }) => {
+        return { data: data.slice(toPrune), ...rest }
+      })
+    }
 
     measurements.forEach((measurement) => this.__handler.call(this, measurement, this.__callback))
     this.chart.setData(dataForDatasets(this.datasets))
