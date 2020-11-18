@@ -19,5 +19,5 @@ config :metrist, Metrist.EventStore,
   password: mepp
 
 config :ueberauth, Ueberauth.Strategy.Github.OAuth,
-  client_id: ghid
+  client_id: ghid,
   client_secret: ghsec
