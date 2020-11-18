@@ -71,8 +71,21 @@ defmodule Metrist.InfluxStore do
   will be converted immediately to a bare value representing the requested units. This
   saves from looping over all the data twice.
   """
-  def values_for(series, field, requested_unit \\ nil) do
-    query = ~s/SELECT #{field} from "#{series}"/
+  def values_for(series, field, time_interval, requested_unit \\ nil) do
+    query = ~s/SELECT #{field} FROM "#{series}"/
+    query = case time_interval do
+              {start, stop} ->
+                start = start
+                |> DateTime.from_unix!()
+                |> DateTime.to_iso8601()
+                stop = stop
+                |> DateTime.from_unix!()
+                |> DateTime.to_iso8601()
+                "#{query} WHERE time >= '#{start}' AND time <= '#{stop}'"
+                _ -> query
+            end
+
+    Logger.info("Query: #{query}")
     %{results: [%{series: [%{values: values}]}]} = query(query)
     Enum.map(values, fn [ts, v] ->
       {:ok, dt, 0} = DateTime.from_iso8601(ts)

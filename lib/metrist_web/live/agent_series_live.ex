@@ -50,10 +50,12 @@ defmodule MetristWeb.AgentSeriesLive do
     |> assign(:fields, fields)
     |> assign(:alive?, Metrist.Agent.Presence.alive?(params["account_uuid"], params["agent_name"]))
     |> assign(:streaming?, false)
+    stop = :erlang.system_time(:second)
+    start = stop - 3600 * 24 # Default, to do: drop-down
     for field <- fields do
       id = "#{socket.assigns.series}.#{field}"
       send_update(MetristWeb.ChartComponent, id: id,
-        data: Metrist.InfluxStore.values_for(series_name, field, :microsecond))
+        data: Metrist.InfluxStore.values_for(series_name, field, {start, stop}, :microsecond))
     end
     Metrist.PubSub.subscribe("agent", agent.uuid)
     {:noreply, socket}
