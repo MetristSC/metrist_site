@@ -139,10 +139,10 @@ class CommonMetric {
         newSeriesConfig(options, 0)
       ],
       scales: {
-        x: {
-          min: options.now - 60,
-          max: options.now
-        },
+//        x: {
+          //min: options.now - 60,
+          //max: options.now
+        //},
         y: {
           min: 0,
           max: 1
@@ -177,224 +177,26 @@ class CommonMetric {
 
   handleMeasurements(measurements) {
     // prune datasets when we reach the max number of events
-    let currentSize = this.datasets[0].data.length
-    if (currentSize >= this.pruneThreshold) {
-      this.datasets = this.datasets.map(({ data, ...rest }) => {
-        return { data: data.slice(-Math.floor(currentSize / 2)), ...rest }
-      })
-    }
+    console.log("handleMeasurements", measurements)
+    let newSize = measurements.length
+    this.datasets = this.datasets.map(({ data, ...rest }) => {
+      return { data: data.slice(measurements.length), ...rest }
+    })
 
     measurements.forEach((measurement) => this.__handler.call(this, measurement, this.__callback))
     this.chart.setData(dataForDatasets(this.datasets))
   }
 }
 
-// Displays a measurement summary
-class Summary {
-  constructor(options, chartEl) {
-    // TODO: Get percentiles from options
-    let config = this.constructor.getConfig(options)
-    // Bind the series `values` callback to this instance
-    config.series[1].values = this.__seriesValues.bind(this)
-
-    this.datasets = [{ key: "|x|", data: [] }]
-    this.chart = new uPlot(config, this.constructor.initialData(options), chartEl)
-    this.pruneThreshold = getPruneThreshold(options)
-    this.options = options
-
-    if (options.tagged) {
-      this.chart.delSeries(1)
-      this.__handler = this.handleTaggedMeasurement.bind(this)
-    } else {
-      this.datasets.push(this.constructor.newDataset(options.label))
-      this.__handler = this.handleMeasurement.bind(this)
-    }
-  }
-
-  handleMeasurements(measurements) {
-    this.__maybePruneDatasets()
-    measurements.forEach((measurement) => this.__handler(measurement))
-    this.chart.setData(dataForDatasets(this.datasets))
-  }
-
-  handleTaggedMeasurement(measurement) {
-    let seriesIndex = this.findOrCreateSeries(measurement.x)
-    this.handleMeasurement(measurement, seriesIndex)
-  }
-
-  handleMeasurement(measurement, sidx = 1) {
-    let { z: timestamp } = measurement
-    this.datasets = this.datasets.map((dataset, index) => {
-      if (dataset.key === "|x|") {
-        dataset.data.push(timestamp)
-      } else if (index === sidx) {
-        this.pushToDataset(dataset, measurement)
-      } else {
-        this.pushToDataset(dataset, null)
-      }
-      return dataset
-    })
-  }
-
-  findOrCreateSeries(label) {
-    let seriesIndex = this.datasets.findIndex(({ key }) => label === key)
-    if (seriesIndex === -1) {
-      seriesIndex = this.datasets.push(
-        this.constructor.newDataset(label, this.datasets[0].data.length)
-      ) - 1
-
-      let config = {
-        values: this.__seriesValues.bind(this),
-        ...newSeriesConfig({ label }, seriesIndex - 1)
-      }
-
-      this.chart.addSeries(config, seriesIndex)
-    }
-
-    return seriesIndex
-  }
-
-  pushToDataset(dataset, measurement) {
-    if (measurement === null) {
-      dataset.data.push(null)
-      dataset.agg.avg.push(null)
-      dataset.agg.max.push(null)
-      dataset.agg.min.push(null)
-      return
-    }
-
-    let { y } = measurement
-
-    // Increment the new overall totals
-    dataset.agg.count++
-    dataset.agg.total += y
-
-    // Push the value
-    dataset.data.push(y)
-
-    // Push min/max/avg
-    if (dataset.last.min === null || y < dataset.last.min) { dataset.last.min = y }
-    dataset.agg.min.push(dataset.last.min)
-
-    if (dataset.last.max === null || y > dataset.last.max) { dataset.last.max = y }
-    dataset.agg.max.push(dataset.last.max)
-
-    dataset.agg.avg.push((dataset.agg.total / dataset.agg.count))
-
-    return dataset
-  }
-
-  __maybePruneDatasets() {
-    let currentSize = this.datasets[0].data.length
-    if (currentSize >= this.pruneThreshold) {
-      let start = -Math.floor(currentSize / 2)
-      this.datasets = this.datasets.map(({ key, data, agg }) => {
-        let dataPruned = data.slice(start)
-        if (!agg) {
-          return { key, data: dataPruned }
-        }
-
-        let { avg, count, max, min, total } = agg
-        let minPruned = min.slice(start)
-        let maxPruned = max.slice(start)
-
-        return {
-          key,
-          data: dataPruned,
-          agg: {
-            avg: avg.slice(start),
-            count,
-            min: minPruned,
-            max: maxPruned,
-            total
-          },
-          last: {
-            min: findLastNonNullValue(minPruned),
-            max: findLastNonNullValue(maxPruned)
-          }
-        }
-      })
-    }
-  }
-
-  __seriesValues(u, sidx, idx) {
-    let dataset = this.datasets[sidx]
-    if (dataset && dataset.data && dataset.data[idx]) {
-      let { agg: { avg, max, min }, data } = dataset
-      return {
-        Value: data[idx].toFixed(3),
-        Min: min[idx].toFixed(3),
-        Max: max[idx].toFixed(3),
-        Avg: avg[idx].toFixed(3)
-      }
-    } else {
-      return { Value: "--", Min: "--", Max: "--", Avg: "--" }
-    }
-  }
-
-  static initialData() { return [[], []] }
-
-  static getConfig(options) {
-    return {
-      class: options.kind,
-      title: options.title,
-      width: options.width,
-      height: options.height,
-      series: [
-        { ...XSeriesValue() },
-        newSeriesConfig(options, 0)
-      ],
-      scales: {
-        x: {
-          min: options.now - 60,
-          max: options.now
-        },
-        y: {
-          min: 0,
-          max: 1
-        },
-      },
-      axes: [
-        XAxis(),
-        YAxis(options)
-      ]
-    }
-  }
-
-  static newDataset(key, length = 0) {
-    let nils = length > 0 ? Array(length).fill(null) : []
-    return {
-      key,
-      data: [...nils],
-      agg: { avg: [...nils], count: 0, max: [...nils], min: [...nils], total: 0 },
-      last: { max: null, min: null }
-    }
-  }
-}
-
-const __METRICS__ = {
-  counter: CommonMetric,
-  last_value: CommonMetric,
-  sum: CommonMetric,
-  summary: Summary
-}
-
 export class TelemetryChart {
   constructor(chartEl, options) {
     if (!options.metric) {
       throw new TypeError(`No metric type was provided`)
-    } else if (options.metric && !__METRICS__[options.metric]) {
-      throw new TypeError(`No metric defined for type ${options.metric}`)
     }
 
-    const metric = __METRICS__[options.metric]
-    if (metric === Summary) {
-      this.metric = new Summary(options, chartEl)
-      this.uplotChart = this.metric.chart
-    } else {
-      this.uplotChart = new uPlot(metric.getConfig(options), metric.initialData(options), chartEl)
-      this.metric = new metric(this.uplotChart, options)
-    }
+    const metric = CommonMetric
+    this.uplotChart = new uPlot(metric.getConfig(options), metric.initialData(options), chartEl)
+    this.metric = new metric(this.uplotChart, options)
 
     // setup the data buffer
     let isBufferingData = typeof options.refreshInterval !== "undefined"

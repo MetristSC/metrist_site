@@ -48,7 +48,7 @@ defmodule MetristWeb.ChartComponent do
           id="chart-ignore-<%= @id %>"
           phx-update="ignore"
           data-label="<%= @field %>"
-          data-metric="summary"
+          data-metric="last_value"
           data-title="<%= @field %>"
           data-tags=""
           data-unit=""
